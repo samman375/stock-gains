@@ -76,8 +76,11 @@ class Investments:
             data[ticker] = {}
             data[ticker]['price'] = tickerData.tickers[ticker].info['ask']
             data[ticker]['fullName'] = tickerData.tickers[ticker].info['longName']
-            # data[ticker]['annualDividends'] = tickerData.tickers[ticker].info['trailingAnnualDividendYield']
+            data[ticker]['yield'] = tickerData.tickers[ticker].info.get('yield', 0)
             data[ticker]['quoteType'] = tickerData.tickers[ticker].info['quoteType']
+            data[ticker]['ytdReturn'] = tickerData.tickers[ticker].info.get('ytdReturn', 0)
+            data[ticker]['threeYrReturn'] = tickerData.tickers[ticker].info.get('threeYearAverageReturn', 0)
+            data[ticker]['fiveYrReturn'] = tickerData.tickers[ticker].info.get('fiveYearAverageReturn', 0)
 
         return data
 
@@ -202,7 +205,6 @@ class Investments:
         """
         Output investments to command line sorted by value + do with and without dividends
         """
-        # TODO: sort by value
 
         tickers = ""
         for ticker in self.investments.keys():
@@ -266,10 +268,40 @@ class Investments:
         return
     
 
-    def estimateDividends(self, months: int):
+    def estimateDividends(self):
         """
-        Estimated dividends in next 3 months, 6 months, year
+        Estimated yearly dividends
         """
-        # TODO:
+        tickers = ""
+        for ticker in self.investments.keys():
+            tickers += f"{ticker} "
+        data = self.getTickerData(tickers.strip())
         
-        return
+        print(f"\nTicker    {'Full Name'.ljust(60, ' ')}  Value     Yield   Est. Return")
+        print("-" * 9 + "+" + "-" * 61 + "+" + "-" * 9 + "+" + "-" * 7 + "+" + "-" * 11)
+
+        totalReturn = 0
+        sumYield = 0
+        nTickers = 0
+        totalValue = 0
+        for ticker, info in data.items():
+            yld = info['yield']
+            volume = self.investments[ticker]['volume']
+            price = info['price']
+            fullName = info['fullName']
+
+            value = volume * price
+            estReturnPS = yld * price
+            estReturn = estReturnPS * volume
+            totalReturn += estReturn
+            sumYield += yld
+            nTickers += 1
+            totalValue += value
+
+            print(f"{ticker.ljust(8, ' ')}  {fullName.ljust(60, ' ')}  {str(round(value, 2)).rjust(8, ' ')}  {str(round(yld * 100, 3)).rjust(5, ' ')}%  {str(round(estReturn, 2)).rjust(11, ' ')}")
+
+        avgYield = sumYield / nTickers
+
+        print("-" * 101)
+        print(f"          {'Total'.ljust(60, ' ')}  {str(round(totalValue, 2)).rjust(8, ' ')}  {str(round(avgYield * 100, 3)).rjust(5, ' ')}%  {str(round(totalReturn, 2)).rjust(11, ' ')}\n")
+

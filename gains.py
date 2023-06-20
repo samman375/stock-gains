@@ -47,7 +47,7 @@ while True:
         continue
 
     elif command == 'estimate' or command == 'e':
-        continue
+        inv.estimateDividends()
 
     elif command == 'quit' or command == 'q':
         break
