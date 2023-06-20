@@ -17,6 +17,7 @@ while True:
         'hs' or 'history':      Investment history
         'd' or 'dividend':      Add received dividend
         'e' or 'estimate':      Get dividend estimate for next 12 months
+        'p' or 'performance':   Get historical stock performance
         'h' or 'help':          Help
         'q' or 'quit':          Quit
         """
@@ -48,6 +49,9 @@ while True:
 
     elif command == 'estimate' or command == 'e':
         inv.estimateDividends()
+    
+    elif command == 'performance' or command == 'p':
+        inv.stockPerformance()
 
     elif command == 'quit' or command == 'q':
         break

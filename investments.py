@@ -67,7 +67,6 @@ class Investments:
         """
         Get data for tickers from Yahoo Finance API
         """
-        # TODO: Fix dividends
 
         tickerData = yf.Tickers(tickers)
         data = {}
@@ -78,9 +77,9 @@ class Investments:
             data[ticker]['fullName'] = tickerData.tickers[ticker].info['longName']
             data[ticker]['yield'] = tickerData.tickers[ticker].info.get('yield', 0)
             data[ticker]['quoteType'] = tickerData.tickers[ticker].info['quoteType']
-            data[ticker]['ytdReturn'] = tickerData.tickers[ticker].info.get('ytdReturn', 0)
-            data[ticker]['threeYrReturn'] = tickerData.tickers[ticker].info.get('threeYearAverageReturn', 0)
-            data[ticker]['fiveYrReturn'] = tickerData.tickers[ticker].info.get('fiveYearAverageReturn', 0)
+            data[ticker]['ytdReturn'] = tickerData.tickers[ticker].info.get('ytdReturn', None)
+            data[ticker]['threeYrReturn'] = tickerData.tickers[ticker].info.get('threeYearAverageReturn', None)
+            data[ticker]['fiveYrReturn'] = tickerData.tickers[ticker].info.get('fiveYearAverageReturn', None)
 
         return data
 
@@ -99,8 +98,22 @@ class Investments:
             json.dump(self.dividends, f)
             f.close()
 
+    def makeTickerString(self):
+        """
+        Produces a string of space separated tickers for use in yfinance lookup
+        """
+        # TODO: Add sort by date option
+        
+        tickersStr = ""
+        tickers = [k for k, _ in sorted(self.investments.items(), key=lambda x:x[1]['cost'], reverse=True)]
+        for ticker in tickers:
+            tickersStr += f"{ticker} "
+        return tickersStr.strip()
+
+
     def outputTickerHeader(self):
         print(f"\nTicker    {'Full Name'.ljust(60, ' ')}  Price    Cost      Value     %Gain    %NetGain  Gain      Net Gain  Dividends")
+        print("-" * 9 + "+" + "-" * 61 + "+" + "-" * 8 + "+" + "-" * 9 + "+" + "-" * 9 + "+" + "-" * 8 + "+" + "-" * 9 + "+" + "-" * 9 + "+" + "-" * 9 + "+" + "-" * 9)
 
 
     def outputTickerValue(self, data:object, ticker:str):
@@ -116,9 +129,10 @@ class Investments:
         gain = value - (cost - totalBrokerage)
         netGain = value - cost
 
-        print(f"{ticker.ljust(8, ' ')}  {fullName.ljust(60, ' ')}  {str(round(price, 2)).ljust(7, ' ')}  {str(round(cost, 2)).ljust(8, ' ')}  {str(round(value, 2)).ljust(8, ' ')}  {(str(round(percGain, 2)) + '%').ljust(7, ' ')}  {(str(round(netPercGain, 2)) + '%').ljust(7, ' ')}   {str(round(gain, 2)).ljust(8, ' ')}  {str(round(netGain, 2)).ljust(8, ' ')}  {str(round(dividend, 2)).ljust(7, ' ')}")
+        print(f"{ticker.ljust(8, ' ')}  {fullName.ljust(60, ' ')}  {str(round(price, 2)).rjust(7, ' ')}  {str(round(cost, 2)).rjust(8, ' ')}  {str(round(value, 2)).rjust(8, ' ')}  {(str(round(percGain, 2)) + '%').rjust(7, ' ')}  {(str(round(netPercGain, 2)) + '%').rjust(7, ' ')}   {str(round(gain, 2)).rjust(8, ' ')}  {str(round(netGain, 2)).rjust(8, ' ')}  {str(round(dividend, 2)).rjust(7, ' ')}")
 
         return {'cost': cost, 'value': value, 'dividend': dividend, 'gain': gain, 'net_gain': netGain, 'brokerage': totalBrokerage}
+
 
     def sortByCost(x, y):
         if x['cost'] >= y['cost']:
@@ -206,11 +220,9 @@ class Investments:
         Output investments to command line sorted by value + do with and without dividends
         """
 
-        tickers = ""
-        for ticker in self.investments.keys():
-            tickers += f"{ticker} "
+        # TODO: Add dividends to net gain, sort by value
     
-        data = self.getTickerData(tickers.strip())
+        data = self.getTickerData(self.makeTickerString())
 
         self.outputTickerHeader()
 
@@ -221,9 +233,7 @@ class Investments:
         totalNetGain = 0
         totalBrokerage = 0
 
-        tickers = [k for k, _ in sorted(self.investments.items(), key=lambda x:x[1]['cost'], reverse=True)]
-        for ticker in tickers:
-        # for ticker in self.investments.keys():
+        for ticker in data.keys():
             values = self.outputTickerValue(data, ticker)
             totalCost += values['cost']
             totalValue += values['value']
@@ -234,7 +244,8 @@ class Investments:
         
         percGain = (totalValue / (totalCost - totalBrokerage) - 1) * 100
         netPercGain = (totalValue / totalCost - 1) * 100
-        print(f"          {'Total'.ljust(69, ' ')}  {str(round(totalCost, 2)).ljust(8, ' ')}  {str(round(totalValue, 2)).ljust(8, ' ')}  {(str(round(percGain, 2)) + '%').ljust(7, ' ')}  {(str(round(netPercGain, 2)) + '%').ljust(7, ' ')}   {str(round(totalGain, 2)).ljust(8, ' ')}  {str(round(totalNetGain, 2)).ljust(8, ' ')}  {str(round(totalDividend, 2)).ljust(7, ' ')}")
+        print("-" * 149)
+        print(f"          {'Total'.ljust(69, ' ')}  {str(round(totalCost, 2)).rjust(8, ' ')}  {str(round(totalValue, 2)).rjust(8, ' ')}  {(str(round(percGain, 2)) + '%').rjust(7, ' ')}  {(str(round(netPercGain, 2)) + '%').rjust(7, ' ')}   {str(round(totalGain, 2)).rjust(8, ' ')}  {str(round(totalNetGain, 2)).rjust(8, ' ')}  {str(round(totalDividend, 2)).rjust(7, ' ')}")
         print()
 
 
@@ -272,10 +283,7 @@ class Investments:
         """
         Estimated yearly dividends
         """
-        tickers = ""
-        for ticker in self.investments.keys():
-            tickers += f"{ticker} "
-        data = self.getTickerData(tickers.strip())
+        data = self.getTickerData(self.makeTickerString())
         
         print(f"\nTicker    {'Full Name'.ljust(60, ' ')}  Value     Yield   Est. Return")
         print("-" * 9 + "+" + "-" * 61 + "+" + "-" * 9 + "+" + "-" * 7 + "+" + "-" * 11)
@@ -305,3 +313,57 @@ class Investments:
         print("-" * 101)
         print(f"          {'Total'.ljust(60, ' ')}  {str(round(totalValue, 2)).rjust(8, ' ')}  {str(round(avgYield * 100, 3)).rjust(5, ' ')}%  {str(round(totalReturn, 2)).rjust(11, ' ')}\n")
 
+
+    def stockPerformance(self):
+        """
+        Output stock performance over YTD, 3Yrs, 5Yrs where available
+        """
+        # TODO: Change to sort by value
+
+        data = self.getTickerData(self.makeTickerString())
+        
+        print(f"\nTicker    {'Full Name'.ljust(60, ' ')}  Value     YTD     3YR     5YR")
+        print("-" * 9 + "+" + "-" * 61 + "+" + "-" * 9 + "+" + "-" * 7 + "+" + "-" * 7 + "+" + "-" * 7)
+
+        sumYtd = 0
+        sumThreeYrRet = 0
+        sumFiveYrRet = 0
+        nTickers = 0
+        totalValue = 0
+
+        for ticker, info in data.items():
+            fullName = info['fullName']
+            value = info['price'] * self.investments[ticker]['volume']
+            ytd = info['ytdReturn']
+            threeYrReturn = info['threeYrReturn']
+            fiveYrReturn = info['fiveYrReturn']
+
+            nTickers += 1
+            totalValue += value
+            
+            if ytd:
+                sumYtd += ytd
+                ytd = str(round(ytd * 100, 2))
+            else:
+                ytd = '- '
+            
+            if threeYrReturn:
+                sumThreeYrRet += threeYrReturn
+                threeYrReturn = str(round(threeYrReturn * 100, 2))
+            else:
+                threeYrReturn = '- '
+            
+            if fiveYrReturn:
+                sumFiveYrRet += fiveYrReturn
+                fiveYrReturn = str(round(fiveYrReturn * 100, 2))
+            else:
+                fiveYrReturn = '- '
+
+            print(f"{ticker.ljust(8, ' ')}  {fullName.ljust(60, ' ')}  {str(round(value, 2)).rjust(8, ' ')}  {ytd.rjust(5, ' ')}%  {threeYrReturn.rjust(5, ' ')}%  {fiveYrReturn.rjust(5, ' ')}%")
+
+        avgYtd = str(round(sumYtd * 100 / nTickers, 2))
+        avgThreeYrRet = str(round(sumThreeYrRet * 100 / nTickers, 2))
+        avgFiveYrRet = str(round(sumFiveYrRet * 100 / nTickers, 2))
+
+        print("-" * 100)
+        print(f"          {'Total'.ljust(60, ' ')}  {str(round(totalValue, 2)).rjust(8, ' ')}  {avgYtd.rjust(5, ' ')}%  {avgThreeYrRet.rjust(5, ' ')}%  {avgFiveYrRet.rjust(5, ' ')}%\n")
