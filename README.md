@@ -29,7 +29,7 @@ The following can be added to your shell configuration file (such as `~/.zshrc`)
 alias stock-gains="cd PATH_TO_LIBRARY && python3 gains.py && cd - >/dev/null"
 ```
 
-The program can then be run from subdirectory with:
+The program can then be run from any subdirectory with:
 ```sh
 stock-gains
 ```
