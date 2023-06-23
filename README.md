@@ -13,6 +13,7 @@ See open issues for future features and bugs.
 
 To run program:
 ```sh
+pip install pandas yfinance
 python3 gains.py
 ```
 
