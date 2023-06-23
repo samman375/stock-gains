@@ -264,18 +264,14 @@ class Investments:
         """
         Output investments to command line sorted by date
         """
-        # TODO:
-        
-        return
+        print("To be implemented.\n")
 
 
     def addDividend(self, date, ticker, value):
         """
         Add dividend received
         """
-        # TODO:
-        
-        return
+        print("To be implemented.\n")
     
 
     def estimateDividends(self):

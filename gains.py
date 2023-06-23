@@ -32,7 +32,13 @@ while True:
         inv.buyInvestment(ticker, price, volume, brokerage, date)
 
     elif command == 'sell' or command == 's':
-        continue
+        tradeId = input('TradeId: ').strip()
+        ticker = input('Ticker: ').strip()
+        price = float(input('Price: ').strip())
+        volume = int(input('Volume: ').strip())
+        brokerage = float(input('Brokerage: ').strip())
+        date = input('Date (DD-MM-YYYY): ').strip()
+        inv.sellInvestment(tradeId, ticker, price, volume, brokerage, date)
 
     elif command == 'ticker-value' or command == 't':
         ticker = input("Ticker Code: ").strip()
@@ -42,10 +48,10 @@ while True:
         inv.listInvestments()
     
     elif command == 'history' or command == 'h':
-        continue
+        inv.investmentHistory()
 
     elif command == 'dividend' or command == 'd':
-        continue
+        inv.addDividend()
 
     elif command == 'estimate' or command == 'e':
         inv.estimateDividends()
