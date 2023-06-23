@@ -2,8 +2,9 @@
 
 A free command-line portfolio tracking tool, that also does not store and on-sell personal data to our government and corporate overlords.
 
-Disclaimer: This tool was created and designed with the 'buy and hold' investment strategy in mind. 
-The data storage methods were not chosen with a very large number of investments in mind.
+Disclaimer: 
+- This tool was created and designed with the 'buy and hold' investment strategy in mind. The data storage methods were not chosen with a very large number of investments in mind.
+- Live data is gathered from the `yfinance` library, which scapes Yahoo finance. As a result accuracy of data cannot be guaranteed.
 
 See open issues for future features and bugs.
 
