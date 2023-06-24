@@ -7,6 +7,8 @@ INVESTMENT_FILE_NAME = 'store/investments.json'
 HISTORY_FILE_NAME = 'store/investment_history.json'
 DIVIDEND_FILE = '/store/dividend_history.json'
 
+MARKETS_OF_INTEREST = '^AXJO ^NDX ^DJI ^GDAXI ^FTSE ^FCHI ^NZ50 ^HSI ^N225 M.BA ^CMC200'
+
 # History File: tradeId:int, ticker:str, price:float, volume:int, brokerage:float, date:str
 # Investment file: ticker, volume, cost, totalBrokerage, dividend
 # Dividend file: ticker, date, value
@@ -404,3 +406,18 @@ class Investments:
 
     def marketPercentage(self):
         print("To be implemented.\n")
+
+    
+    def marketPerformance(self):
+        tickerData = yf.Tickers(MARKETS_OF_INTEREST)
+        data = {}
+        for ticker in tickerData.tickers:
+            data[ticker] = {}
+            data[ticker]['fullName'] = tickerData.tickers[ticker].info['shortName'].split('(')[0]
+            """
+            Example output:
+
+            {'maxAge': 86400, 'priceHint': 2, 'previousClose': 7195.5, 'open': 7195.5, 'dayLow': 7087.9, 'dayHigh': 7195.7, 'regularMarketPreviousClose': 7195.5, 'regularMarketOpen': 7195.5, 'regularMarketDayLow': 7087.9, 'regularMarketDayHigh': 7195.7, 'volume': 0, 'regularMarketVolume': 0, 'averageVolume': 694955, 'averageVolume10days': 765500, 'averageDailyVolume10Day': 765500, 'bid': 0.0, 'ask': 0.0, 'bidSize': 0, 'askSize': 0, 'fiftyTwoWeekLow': 6411.9, 'fiftyTwoWeekHigh': 7567.7, 'fiftyDayAverage': 7238.796, 'twoHundredDayAverage': 7132.8955, 'currency': 'AUD', 'exchange': 'ASX', 'quoteType': 'INDEX', 'symbol': '^AXJO', 'underlyingSymbol': '^AXJO', 'shortName': 'S&P/ASX 200', 'longName': 'S&P/ASX 200', 'firstTradeDateEpochUtc': 722473200, 'timeZoneFullName': 'Australia/Sydney', 'timeZoneShortName': 'AEST', 'uuid': 'e3816ce6-9eb7-35d1-89e5-78a3881994df', 'messageBoardId': 'finmb_INDEXAXJO', 'gmtOffSetMilliseconds': 36000000, 'trailingPegRatio': None}
+            """
+
+            

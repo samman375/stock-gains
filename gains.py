@@ -20,6 +20,7 @@ while True:
         'p' or 'performance':   Get historical stock performance
         'ipc' or 'inv-perc':    Get portfolio percentage share for each investment
         'mpc' or 'mkt-perc':    Get portfolio percentage share for each market
+        'mp' or 'mkt-perf':     Compare performance of global markets of interest
         'h' or 'help':          Help
         'q' or 'quit':          Quit
         """
@@ -66,6 +67,9 @@ while True:
 
     elif command == 'mkt-perc' or command == 'mpc':
         inv.marketPercentage()
+
+    elif command == 'mkr-perf' or command == 'mp':
+        inv.marketPerformance()
 
     elif command == 'quit' or command == 'q':
         break
