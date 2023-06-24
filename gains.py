@@ -18,6 +18,8 @@ while True:
         'd' or 'dividend':      Add received dividend
         'e' or 'estimate':      Get dividend estimate for next 12 months
         'p' or 'performance':   Get historical stock performance
+        'ipc' or 'inv-perc':    Get portfolio percentage share for each investment
+        'mpc' or 'mkt-perc':    Get portfolio percentage share for each market
         'h' or 'help':          Help
         'q' or 'quit':          Quit
         """
@@ -58,6 +60,12 @@ while True:
     
     elif command == 'performance' or command == 'p':
         inv.stockPerformance()
+    
+    elif command == 'inv-perc' or command == 'ipc':
+        inv.investmentPercentage()
+
+    elif command == 'mkt-perc' or command == 'mpc':
+        inv.marketPercentage()
 
     elif command == 'quit' or command == 'q':
         break
