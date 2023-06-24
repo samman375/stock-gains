@@ -362,3 +362,45 @@ class Investments:
 
         print("-" * 100)
         print(f"          {'Total'.ljust(60, ' ')}  {str(round(totalValue, 2)).rjust(8, ' ')}  {avgYtd.rjust(5, ' ')}%  {avgThreeYrRet.rjust(5, ' ')}%  {avgFiveYrRet.rjust(5, ' ')}%\n")
+
+    
+    def investmentPercentage(self):
+        data = self.getTickerData(self.makeTickerString())
+        # totalValue = sum([x.values()['price'] * x.values()['volume'] for x in data])
+        # totalCost = sum([x.values()['cost'] for x in data])
+        
+
+        print(f"\nTicker    {'Full Name'.ljust(60, ' ')}  Value     Cost      %Value    %Cost")
+        print("-" * 9 + "+" + "-" * 61 + "+" + "-" * 9 + "+" + "-" * 9 + "+" + "-" * 9 + "+" + "-" * 9)
+        
+        nTickers = 0
+        totalValue = 0
+        totalCost = 0
+        for ticker, info in data.items():
+            value = info['price'] * self.investments[ticker]['volume']
+            cost = self.investments[ticker]['cost']
+            totalValue += value
+            data[ticker]['value'] = value
+            totalCost += cost
+            data[ticker]['cost'] = cost
+            nTickers += 1
+        
+        sortedTickers = [k for k, _ in sorted(data.items(), key=lambda x:x[1]['value'], reverse=True)]
+
+        for ticker in sortedTickers:
+            info = data[ticker]
+            fullName = info['fullName']
+            value = info['value']
+            cost = info['cost']
+            valuePrc = str(round((value / totalValue) * 100, 2))
+            costPrc = str(round((cost / totalCost) * 100, 2))
+
+            print(f"{ticker.ljust(8, ' ')}  {fullName.ljust(60, ' ')}  {str(round(value, 2)).rjust(8, ' ')}  {str(round(cost, 2)).rjust(8, ' ')}  {valuePrc.rjust(7, ' ')}%  {costPrc.rjust(7, ' ')}%")
+
+        
+        print("-" * 111)
+        print(f"          {'Total'.ljust(60, ' ')}  {str(round(totalValue, 2)).rjust(8, ' ')}  {str(round(totalCost, 2)).rjust(8, ' ')}\n")
+
+
+    def marketPercentage(self):
+        print("To be implemented.\n")
