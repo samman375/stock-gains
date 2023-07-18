@@ -301,7 +301,7 @@ class Investments:
         self.dividendHistory[dividendId] = dividend
         self.updateDividendFile()
 
-        print(f"Recorded dividend receives for {ticker} on {date} at value of {value}\n")
+        print(f"Recorded dividend receives for {ticker} on {date} at value of ${value}\n")
     
 
     def estimateDividends(self):
