@@ -5,11 +5,11 @@ import yfinance as yf
 
 INVESTMENT_FILE_NAME = 'store/investments.json'
 HISTORY_FILE_NAME = 'store/investment_history.json'
-DIVIDEND_FILE = '/store/dividend_history.json'
+DIVIDEND_FILE = 'store/dividend_history.json'
 
 # History File: tradeId:int, ticker:str, price:float, volume:int, brokerage:float, date:str
 # Investment file: ticker, volume, cost, totalBrokerage, dividend
-# Dividend file: ticker, date, value
+# Dividend file: dividendId, ticker, date, value
 
 
 class Investments:
@@ -17,7 +17,8 @@ class Investments:
         self.investments = self.getInvestments()
         self.history = self.getHistory()
         self.maxId = self.getMaxId()
-        self.dividends = self.getDividends()
+        self.dividendHistory = self.getDividends()
+        self.maxDividendId = self.getMaxDividendId()
     
     ###########
     # HELPERS #
@@ -62,6 +63,15 @@ class Investments:
         else:
             return 0
     
+    def getMaxDividendId(self):
+        """
+        Gets largest trade ID
+        """
+        if len(self.dividendHistory.keys()) > 0:
+            return max([int(dividendId) for dividendId in self.dividendHistory])
+        else:
+            return 0
+    
     def getTickerData(self, tickers:str):
         """
         Get data for tickers from Yahoo Finance API
@@ -94,7 +104,7 @@ class Investments:
     
     def updateDividendFile(self):
         with open(DIVIDEND_FILE, 'w') as f:
-            json.dump(self.dividends, f)
+            json.dump(self.dividendHistory, f)
             f.close()
 
     def makeTickerString(self):
@@ -126,7 +136,7 @@ class Investments:
         percGain = (value / (cost - totalBrokerage) - 1) * 100
         netPercGain = (value / cost - 1) * 100
         gain = value - (cost - totalBrokerage)
-        netGain = value - cost
+        netGain = value - cost + dividend
 
         print(f"{ticker.ljust(8, ' ')}  {fullName.ljust(60, ' ')}  {str(round(price, 2)).rjust(7, ' ')}  {str(round(cost, 2)).rjust(8, ' ')}  {str(round(value, 2)).rjust(8, ' ')}  {(str(round(percGain, 2)) + '%').rjust(7, ' ')}  {(str(round(netPercGain, 2)) + '%').rjust(7, ' ')}   {str(round(gain, 2)).rjust(8, ' ')}  {str(round(netGain, 2)).rjust(8, ' ')}  {str(round(dividend, 2)).rjust(7, ' ')}")
 
@@ -241,6 +251,8 @@ class Investments:
             totalNetGain += values['net_gain']
             totalBrokerage += values['brokerage']
         
+        totalNetGain += totalDividend
+
         percGain = (totalValue / (totalCost - totalBrokerage) - 1) * 100
         netPercGain = (totalValue / totalCost - 1) * 100
         print("-" * 149)
@@ -271,7 +283,25 @@ class Investments:
         """
         Add dividend received
         """
-        print("To be implemented.\n")
+        if ticker not in self.investments.keys():
+            print(f"Invalid ticker provided: {ticker}\n")
+            return
+
+        self.investments[ticker]['dividend'] += value
+        self.updateInvestmentFile()
+
+        dividendId = int(self.maxDividendId) + 1
+        self.maxDividendId = dividendId
+
+        dividend = {}
+        dividend['ticker'] = ticker
+        dividend['value'] = value
+        dividend['data'] = date
+
+        self.dividendHistory[dividendId] = dividend
+        self.updateDividendFile()
+
+        print(f"Recorded dividend receives for {ticker} on {date} at value of {value}\n")
     
 
     def estimateDividends(self):
