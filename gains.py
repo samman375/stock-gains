@@ -27,18 +27,18 @@ while True:
 
     elif command == 'buy' or command == 'b':
         ticker = input('Ticker: ').strip()
-        price = float(input('Price: ').strip())
+        price = float(input('Price: $').strip())
         volume = int(input('Volume: ').strip())
-        brokerage = float(input('Brokerage: ').strip())
+        brokerage = float(input('Brokerage: $').strip())
         date = input('Date (DD-MM-YYYY): ').strip()
         inv.buyInvestment(ticker, price, volume, brokerage, date)
 
     elif command == 'sell' or command == 's':
         tradeId = input('TradeId: ').strip()
         ticker = input('Ticker: ').strip()
-        price = float(input('Price: ').strip())
+        price = float(input('Price: $').strip())
         volume = int(input('Volume: ').strip())
-        brokerage = float(input('Brokerage: ').strip())
+        brokerage = float(input('Brokerage: $').strip())
         date = input('Date (DD-MM-YYYY): ').strip()
         inv.sellInvestment(tradeId, ticker, price, volume, brokerage, date)
 
@@ -54,7 +54,7 @@ while True:
 
     elif command == 'dividend' or command == 'd':
         ticker = input('Ticker: ').strip()
-        value = float(input('Value: ').strip())
+        value = float(input('Value: $').strip())
         date = input('Date (DD-MM-YYYY): ').strip()
         inv.addDividend(date, ticker, value)
 
