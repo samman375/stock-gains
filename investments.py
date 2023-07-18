@@ -219,7 +219,7 @@ class Investments:
         Output investments to command line sorted by value + do with and without dividends
         """
 
-        # TODO: Add dividends to net gain, sort by value
+        # TODO: sort by value
     
         data = self.getTickerData(self.makeTickerString())
 
