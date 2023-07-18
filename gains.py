@@ -53,7 +53,10 @@ while True:
         inv.investmentHistory()
 
     elif command == 'dividend' or command == 'd':
-        inv.addDividend()
+        ticker = input('Ticker: ').strip()
+        value = float(input('Value: ').strip())
+        date = input('Date (DD-MM-YYYY): ').strip()
+        inv.addDividend(date, ticker, value)
 
     elif command == 'estimate' or command == 'e':
         inv.estimateDividends()
