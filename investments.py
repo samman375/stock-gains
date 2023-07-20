@@ -134,9 +134,9 @@ class Investments:
         dividend = self.investments[ticker]['dividend']
         value = price * volume
         percGain = (value / (cost - totalBrokerage) - 1) * 100
-        netPercGain = (value / cost - 1) * 100
+        netPercGain = ((value + dividend) / cost - 1) * 100
         gain = value - (cost - totalBrokerage)
-        netGain = value - cost + dividend
+        netGain = value + dividend - cost
 
         print(f"{ticker.ljust(8, ' ')}  {fullName.ljust(60, ' ')}  {str(round(price, 2)).rjust(7, ' ')}  {str(round(cost, 2)).rjust(8, ' ')}  {str(round(value, 2)).rjust(8, ' ')}  {(str(round(percGain, 2)) + '%').rjust(7, ' ')}  {(str(round(netPercGain, 2)) + '%').rjust(7, ' ')}   {str(round(gain, 2)).rjust(8, ' ')}  {str(round(netGain, 2)).rjust(8, ' ')}  {str(round(dividend, 2)).rjust(7, ' ')}")
 
