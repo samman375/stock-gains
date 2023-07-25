@@ -254,7 +254,7 @@ class Investments:
         totalNetGain += totalDividend
 
         percGain = (totalValue / (totalCost - totalBrokerage) - 1) * 100
-        netPercGain = (totalValue / totalCost - 1) * 100
+        netPercGain = (totalNetGain / totalCost) * 100
         print("-" * 149)
         print(f"          {'Total'.ljust(69, ' ')}  {str(round(totalCost, 2)).rjust(8, ' ')}  {str(round(totalValue, 2)).rjust(8, ' ')}  {(str(round(percGain, 2)) + '%').rjust(7, ' ')}  {(str(round(netPercGain, 2)) + '%').rjust(7, ' ')}   {str(round(totalGain, 2)).rjust(8, ' ')}  {str(round(totalNetGain, 2)).rjust(8, ' ')}  {str(round(totalDividend, 2)).rjust(7, ' ')}")
         print()
