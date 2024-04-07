@@ -49,7 +49,7 @@ while True:
     elif command == 'value' or command == 'v':
         inv.listInvestments()
     
-    elif command == 'history' or command == 'h':
+    elif command == 'history' or command == 'hs':
         inv.investmentHistory()
 
     elif command == 'dividend' or command == 'd':
