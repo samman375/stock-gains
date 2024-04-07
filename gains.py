@@ -20,6 +20,7 @@ while True:
         'p' or 'performance':   Get historical stock performance
         'ipc' or 'inv-perc':    Get portfolio percentage share for each investment
         'mpc' or 'mkt-perc':    Get portfolio percentage share for each market
+        'r' or 'rebalance':     Get suggestions on where to invest to rebalance portfolio
         'h' or 'help':          Help
         'q' or 'quit':          Quit
         """
@@ -69,6 +70,9 @@ while True:
 
     elif command == 'mkt-perc' or command == 'mpc':
         inv.marketPercentage()
+
+    elif command == 'rebalance' or command == 'r':
+        inv.rebalanceSuggestions()
 
     elif command == 'quit' or command == 'q':
         break
