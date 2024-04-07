@@ -74,4 +74,4 @@ while True:
         break
 
     else:
-        print("Invalid command. Enter 'help' for list of commands.")
+        print("Invalid command. Enter 'help' for list of commands.\n")

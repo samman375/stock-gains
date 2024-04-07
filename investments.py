@@ -288,7 +288,7 @@ class Investments:
             histDF['Date'] = pd.to_datetime(histDF['Date'], format='%d-%m-%Y')
             histDF = histDF.sort_values(by='Date')
             
-            print(histDF.to_string(index=False))
+            print(f'\n{histDF.to_string(index=False)}\n')
         elif hsCommand == 'd' or hsCommand == 'dividends':
             dfRows = []
             for divData in self.dividendHistory.values():
@@ -299,9 +299,9 @@ class Investments:
             histDF['Date'] = pd.to_datetime(histDF['Date'], format='%d-%m-%Y')
             histDF = histDF.sort_values(by='Date')
             
-            print(histDF.to_string(index=False))
+            print(f'\n{histDF.to_string(index=False)}\n')
         else:
-            print('Invalid history type specified.')
+            print('Invalid history type specified.\n')
 
 
     def addDividend(self, date, ticker, value):
