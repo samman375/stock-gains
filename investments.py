@@ -6,10 +6,12 @@ import yfinance as yf
 INVESTMENT_FILE_NAME = 'store/investments.json'
 HISTORY_FILE_NAME = 'store/investment_history.json'
 DIVIDEND_FILE = 'store/dividend_history.json'
+PORTFOLIO_BALANCE_FILE = 'store/portfolio_balance.json'
 
 # History File: tradeId:int, ticker:str, price:float, volume:int, brokerage:float, date:str
 # Investment file: ticker, volume, cost, totalBrokerage, dividend
 # Dividend file: dividendId, ticker, date, value
+# Portfolio balance file: ticker: percentage
 
 
 class Investments:
@@ -19,6 +21,7 @@ class Investments:
         self.maxId = self.getMaxId()
         self.dividendHistory = self.getDividends()
         self.maxDividendId = self.getMaxDividendId()
+        self.portfolioBalance = self.getPortfolioBalance()
     
     ###########
     # HELPERS #
@@ -53,6 +56,16 @@ class Investments:
                 return json.load(f)
         else:
             return {}
+    
+    def getPortfolioBalance(self):
+        """
+        Get portfolio balance from file
+        """
+        if os.path.isfile(PORTFOLIO_BALANCE_FILE):
+            with open(PORTFOLIO_BALANCE_FILE, 'r') as f:
+                return json.load(f)
+        else:
+            return {}
 
     def getMaxId(self):
         """
@@ -75,6 +88,7 @@ class Investments:
     def getTickerData(self, tickers:str):
         """
         Get data for tickers from Yahoo Finance API
+        Tickes space separated tickers in a string
         """
 
         tickerData = yf.Tickers(tickers)
@@ -91,6 +105,19 @@ class Investments:
             data[ticker]['fiveYrReturn'] = tickerData.tickers[ticker].info.get('fiveYearAverageReturn', None)
 
         return data
+    
+    def getTickerPrices(self, tickers:str):
+        """
+        Similar to `getTickerData` but only gets price
+        Takes list of comma separated tickers
+        """
+        ticker_string = ' '.join(tickers)
+        tickerData = yf.Tickers(ticker_string)
+        data = {}
+        for ticker in tickers:
+            data[ticker] = tickerData.tickers[ticker].info['ask']
+
+        return data
 
     def updateInvestmentFile(self):
         with open(INVESTMENT_FILE_NAME, 'w') as f:
@@ -105,6 +132,11 @@ class Investments:
     def updateDividendFile(self):
         with open(DIVIDEND_FILE, 'w') as f:
             json.dump(self.dividendHistory, f)
+            f.close()
+    
+    def updatePortfolioBalanceFile(self):
+        with open(PORTFOLIO_BALANCE_FILE, 'w') as f:
+            json.dump(self.portfolioBalance, f)
             f.close()
 
     def makeTickerString(self):
@@ -142,6 +174,37 @@ class Investments:
 
         return {'cost': cost, 'value': value, 'dividend': dividend, 'gain': gain, 'net_gain': netGain, 'brokerage': totalBrokerage}
 
+    def printPortfolioBalanceTargets(self):
+        print(f"\nTicker  Target")
+        print("--------+------")
+        for ticker in self.portfolioBalance:
+            print(f"{ticker.ljust(8, ' ')} {(str(format(self.portfolioBalance[ticker], '.2f')) + '%').rjust(6, ' ')}")
+
+    def updatePortfolioBalanceTargets(self):
+        print('Provide ticker code and percentage. Enter \'-\' as ticker when complete.\n')
+
+        balanceRows = {}
+        percTotal = 0
+        while True:
+            ticker = input('Ticker: ').strip()
+            if ticker == '-':
+                if percTotal > 100:
+                    print('Error: Total percentage cannot exceed 100%.\n')
+                    return
+                elif percTotal <= 0:
+                    print('Error: Total percentage cannot negative or 0.\n')
+                    return
+                else:
+                    break
+            targetPerc = float(input('Target percentage (%): ').strip())
+            percTotal += targetPerc
+            balanceRows[ticker] = targetPerc
+
+        self.portfolioBalance = balanceRows
+        self.updatePortfolioBalanceFile()
+
+        print('\nCurrent Portfolio Balance Targets:')
+        self.printPortfolioBalanceTargets()
 
     def sortByCost(x, y):
         if x['cost'] >= y['cost']:
@@ -288,7 +351,7 @@ class Investments:
             histDF['Date'] = pd.to_datetime(histDF['Date'], format='%d-%m-%Y')
             histDF = histDF.sort_values(by='Date')
             
-            print(histDF.to_string(index=False))
+            print(f'\n{histDF.to_string(index=False)}\n')
         elif hsCommand == 'd' or hsCommand == 'dividends':
             dfRows = []
             for divData in self.dividendHistory.values():
@@ -299,9 +362,9 @@ class Investments:
             histDF['Date'] = pd.to_datetime(histDF['Date'], format='%d-%m-%Y')
             histDF = histDF.sort_values(by='Date')
             
-            print(histDF.to_string(index=False))
+            print(f'\n{histDF.to_string(index=False)}\n')
         else:
-            print('Invalid history type specified.')
+            print('Invalid history type specified.\n')
 
 
     def addDividend(self, date, ticker, value):
@@ -459,3 +522,70 @@ class Investments:
 
     def marketPercentage(self):
         print("To be implemented.\n")
+
+    def rebalanceSuggestions(self):
+        """
+        Based on current portfolio value and ideal portfolio balance
+        gives amounts needed for those investments to reach target balance.
+        """
+        if not self.portfolioBalance:
+            print('\nTarget portfolio balance input required.')
+            self.updatePortfolioBalanceTargets()
+
+        else:
+            print('\nCurrent Portfolio Balance Targets:')
+            self.printPortfolioBalanceTargets()
+
+            updateCmd = input('\nWould you like to update your targets (Y/N)? ').lower().strip()
+            if updateCmd == 'y':
+                self.updatePortfolioBalanceTargets()
+            elif updateCmd != 'n':
+                print('Invalid input received.')
+                return
+        
+        prices = self.getTickerPrices(self.portfolioBalance.keys())
+        data = {}
+        
+        # TODO: Algorithm
+            # work out current value of each ticker
+            # work out total value of all tickers
+            # work out perc of total value for each ticker
+            # get highest perc and calculate new target total value by adjusting perc to target
+            # work out amount needed for each ticker to reach target
+        
+        totalValue = 0
+        for ticker, price in prices.items():
+            volume = self.investments[ticker]['volume']
+            value = round(volume * price, 2)
+            totalValue += value
+            data[ticker] = {}
+            data[ticker]['value'] = value
+            data[ticker]['targetPerc'] = self.portfolioBalance[ticker]
+
+        highestPercDiff = 0
+        highestTicker = ""
+        for ticker in data:
+            currentPerc = (data[ticker]['value'] / totalValue) * 100
+            data[ticker]['currentPerc'] = currentPerc
+            targetPercDiff = (currentPerc - data[ticker]['targetPerc']) * (100 / data[ticker]['targetPerc'])
+            if targetPercDiff > highestPercDiff:
+                highestPercDiff = targetPercDiff
+                highestTicker = ticker
+
+        targetTotalValue = data[highestTicker]['value'] * (100 / data[highestTicker]['targetPerc'])
+
+        dfRows = []
+        for ticker in data:
+            targetValue = targetTotalValue * (data[ticker]['targetPerc'] / 100)
+            targetDiff = targetValue - data[ticker]['value']
+            dfRows.append([
+                ticker, 
+                format(data[ticker]['currentPerc'], '.2f'), 
+                format(data[ticker]['targetPerc'], '.2f'), 
+                format(data[ticker]['value'], '.2f'), 
+                format(targetValue, '.2f'), 
+                format(targetDiff, '.2f')
+            ])
+
+        outputDf = pd.DataFrame(dfRows, columns=['Ticker', 'Current %', 'Target %', 'Value', 'Target Value', 'Suggestion'])
+        print(f'\n{outputDf.to_string(index=False)}\n')
