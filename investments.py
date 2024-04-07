@@ -274,9 +274,34 @@ class Investments:
 
     def investmentHistory(self):
         """
-        Output investments to command line sorted by date
+        Output investments or dividends to command line sorted by date
         """
-        print("To be implemented.\n")
+        hsCommand = input('History type to display (trades/dividends): ').lower().strip()
+        if hsCommand == 't' or hsCommand == 'trades':
+            dfRows = []
+            for invData in self.history.values():
+                value = round(invData['price'] * invData['volume'], 2)
+                dfRow = [invData['date'], invData['ticker'], invData['status'], value, invData['price'], invData['volume'], invData['brokerage']]
+                dfRows.append(dfRow)
+            
+            histDF = pd.DataFrame(dfRows, columns = ['Date', 'Ticker', 'Status', 'Total Value', 'Price', 'Volume', 'Brokerage'])
+            histDF['Date'] = pd.to_datetime(histDF['Date'], format='%d-%m-%Y')
+            histDF = histDF.sort_values(by='Date')
+            
+            print(histDF.to_string(index=False))
+        elif hsCommand == 'd' or hsCommand == 'dividends':
+            dfRows = []
+            for divData in self.dividendHistory.values():
+                dfRow = [divData['date'], divData['ticker'], divData['value']]
+                dfRows.append(dfRow)
+            
+            histDF = pd.DataFrame(dfRows, columns = ['Date', 'Ticker', 'Value'])
+            histDF['Date'] = pd.to_datetime(histDF['Date'], format='%d-%m-%Y')
+            histDF = histDF.sort_values(by='Date')
+            
+            print(histDF.to_string(index=False))
+        else:
+            print('Invalid history type specified.')
 
 
     def addDividend(self, date, ticker, value):
@@ -296,7 +321,7 @@ class Investments:
         dividend = {}
         dividend['ticker'] = ticker
         dividend['value'] = value
-        dividend['data'] = date
+        dividend['date'] = date
 
         self.dividendHistory[dividendId] = dividend
         self.updateDividendFile()
