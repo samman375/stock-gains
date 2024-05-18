@@ -181,24 +181,23 @@ class Investments:
             print(f"{ticker.ljust(8, ' ')} {(str(format(self.portfolioBalance[ticker], '.2f')) + '%').rjust(6, ' ')}")
 
     def updatePortfolioBalanceTargets(self):
-        print('Provide ticker code and percentage. Enter \'-\' as ticker when complete.\n')
+        print('Provide ticker code and percentage.\n')
 
         balanceRows = {}
         percTotal = 0
-        while True:
+        while percTotal < 100:
             ticker = input('Ticker: ').strip()
-            if ticker == '-':
-                if percTotal > 100:
-                    print('Error: Total percentage cannot exceed 100%.\n')
-                    return
-                elif percTotal <= 0:
-                    print('Error: Total percentage cannot negative or 0.\n')
-                    return
-                else:
-                    break
-            targetPerc = float(input('Target percentage (%): ').strip())
+            targetPerc = 0
+            while targetPerc <= 0:
+                targetPerc = float(input(f'Current: {percTotal}%. Target percentage (%): ').strip())
+                if targetPerc <= 0:
+                    print('Error: Target percentage cannot be negative or 0.')
             percTotal += targetPerc
             balanceRows[ticker] = targetPerc
+
+        if percTotal > 100:
+            print('Error: Total percentage cannot exceed 100%.')
+            return
 
         self.portfolioBalance = balanceRows
         self.updatePortfolioBalanceFile()
@@ -545,13 +544,6 @@ class Investments:
         
         prices = self.getTickerPrices(self.portfolioBalance.keys())
         data = {}
-        
-        # TODO: Algorithm
-            # work out current value of each ticker
-            # work out total value of all tickers
-            # work out perc of total value for each ticker
-            # get highest perc and calculate new target total value by adjusting perc to target
-            # work out amount needed for each ticker to reach target
         
         totalValue = 0
         for ticker, price in prices.items():
