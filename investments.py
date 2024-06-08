@@ -539,12 +539,23 @@ class Investments:
             if updateCmd == 'y':
                 self.updatePortfolioBalanceTargets()
             elif updateCmd != 'n':
-                print('Invalid input received.')
+                print('Invalid input received.\n')
                 return
         
+        targetTotalValue = 0
+        userHasTargetValue = input('Do you have a total portfolio target in mind (Y/N)? ').lower().strip()
+        if userHasTargetValue == 'y':
+            while targetTotalValue <= 0:
+                targetTotalValue = float(input('Enter target value: $').strip())
+                if targetTotalValue <= 0:
+                    print('Invalid target received. Target must be greater than $0.')
+        elif userHasTargetValue != 'n':
+            print('Invalid input received.\n')
+            return
+
         prices = self.getTickerPrices(self.portfolioBalance.keys())
         data = {}
-        
+
         totalValue = 0
         for ticker, price in prices.items():
             volume = self.investments[ticker]['volume']
@@ -564,7 +575,8 @@ class Investments:
                 highestPercDiff = targetPercDiff
                 highestTicker = ticker
 
-        targetTotalValue = data[highestTicker]['value'] * (100 / data[highestTicker]['targetPerc'])
+        if not targetTotalValue:
+            targetTotalValue = data[highestTicker]['value'] * (100 / data[highestTicker]['targetPerc'])
 
         dfRows = []
         for ticker in data:
