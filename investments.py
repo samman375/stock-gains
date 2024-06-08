@@ -435,7 +435,7 @@ class Investments:
         data = self.getTickerData(self.makeTickerString())
         
         print(f"\nTicker    {'Full Name'.ljust(60, ' ')}  Value     YTD     3YR     5YR")
-        print("-" * 9 + "+" + "-" * 61 + "+" + "-" * 9 + "+" + "-" * 7 + "+" + "-" * 7 + "+" + "-" * 7)
+        print("-" * 9 + "+" + "-" * 61 + "+" + "-" * 9 + "+" + "-" * 8 + "+" + "-" * 8 + "+" + "-" * 8)
 
         sumYtd = 0
         sumThreeYrRet = 0
@@ -471,14 +471,14 @@ class Investments:
             else:
                 fiveYrReturn = '- '
 
-            print(f"{ticker.ljust(8, ' ')}  {fullName.ljust(60, ' ')}  {str(round(value, 2)).rjust(8, ' ')}  {ytd.rjust(5, ' ')}%  {threeYrReturn.rjust(5, ' ')}%  {fiveYrReturn.rjust(5, ' ')}%")
+            print(f"{ticker.ljust(8, ' ')}  {fullName.ljust(60, ' ')}  {str(round(value, 2)).rjust(8, ' ')}  {ytd.rjust(6, ' ')}%  {threeYrReturn.rjust(6, ' ')}%  {fiveYrReturn.rjust(6, ' ')}%")
 
         avgYtd = str(round(sumYtd * 100 / nTickers, 2))
         avgThreeYrRet = str(round(sumThreeYrRet * 100 / nTickers, 2))
         avgFiveYrRet = str(round(sumFiveYrRet * 100 / nTickers, 2))
 
-        print("-" * 100)
-        print(f"          {'Total'.ljust(60, ' ')}  {str(round(totalValue, 2)).rjust(8, ' ')}  {avgYtd.rjust(5, ' ')}%  {avgThreeYrRet.rjust(5, ' ')}%  {avgFiveYrRet.rjust(5, ' ')}%\n")
+        print("-" * 108)
+        print(f"          {'Total'.ljust(60, ' ')}  {str(round(totalValue, 2)).rjust(8, ' ')}  {avgYtd.rjust(6, ' ')}%  {avgThreeYrRet.rjust(6, ' ')}%  {avgFiveYrRet.rjust(6, ' ')}%\n")
 
     
     def investmentPercentage(self):
