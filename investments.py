@@ -181,18 +181,17 @@ class Investments:
         return {'cost': cost, 'value': value, 'dividend': dividend, 'gain': gain, 'net_gain': netGain, 'brokerage': totalBrokerage}
 
     def printPortfolioBalanceTargets(self):
-        print(f"\nTicker  Target")
-        print("--------+------")
-        for ticker in self.portfolioBalance:
-            print(f"{ticker.ljust(8, ' ')} {(str(format(self.portfolioBalance[ticker], '.2f')) + '%').rjust(6, ' ')}")
+        df = pd.DataFrame(self.portfolioBalance.items(), columns=['Ticker Group', 'Target %'])
+        print(f'\n{df.to_string(index=False)}\n')
 
     def updatePortfolioBalanceTargets(self):
-        print('Provide ticker code and percentage.\n')
+        print('Provide ticker code and percentage.')
+        print('To combine tickers separate using a `+`, such as: NDQ.AX+IVV.AX\n')
 
         balanceRows = {}
         percTotal = 0
         while percTotal < 100:
-            ticker = input('Ticker: ').strip()
+            ticker = input('Ticker: ').strip()  # TODO: Add instructions on combining
             targetPerc = 0
             while targetPerc <= 0:
                 targetPerc = float(input(f'Current: {percTotal}%. Target percentage (%): ').strip())
@@ -496,11 +495,11 @@ class Investments:
         data = self.getTickerData(self.makeTickerString())
         # totalValue = sum([x.values()['price'] * x.values()['volume'] for x in data])
         # totalCost = sum([x.values()['cost'] for x in data])
-        
+
 
         print(f"\nTicker    {'Full Name'.ljust(60, ' ')}  Value     Cost      %Value    %Cost")
         print("-" * 9 + "+" + "-" * 61 + "+" + "-" * 9 + "+" + "-" * 9 + "+" + "-" * 9 + "+" + "-" * 9)
-        
+
         nTickers = 0
         totalValue = 0
         totalCost = 0
@@ -552,7 +551,7 @@ class Investments:
             elif updateCmd != 'n':
                 print('Invalid input received.\n')
                 return
-        
+
         targetTotalValue = 0
         userHasTargetValue = input('Do you have a total portfolio target in mind (Y/N)? ').lower().strip()
         if userHasTargetValue == 'y':
@@ -564,43 +563,58 @@ class Investments:
             print('Invalid input received.\n')
             return
 
-        prices = self.getTickerPrices(self.portfolioBalance.keys())
-        data = {}
-
+        # Create buckets dictionary with format:
+        # {
+        #     "NDQ.AX+IVV.AX":
+        #         {
+        #             "tickers": ["IVV.AX"+"NDQ.AX"],
+        #             "value": 100000,
+        #             "targetPerc": 25
+        #         }
+        # }
+        
         totalValue = 0
-        for ticker, price in prices.items():
-            volume = self.investments[ticker]['volume']
-            value = round(volume * price, 2)
+        buckets = {}
+        for tickerGroup in self.portfolioBalance.keys():            
+            buckets[tickerGroup] = {}
+            tickers = tickerGroup.split('+')
+            buckets[tickerGroup]["tickers"] = tickers
+            buckets[tickerGroup]["targetPerc"] = self.portfolioBalance[tickerGroup]
+
+            prices = self.getTickerPrices(tickers)
+            value = 0
+            for ticker, price in prices.items():
+                volume = self.investments[ticker]['volume']
+                value += round(volume * price, 2)
+
+            buckets[tickerGroup]["value"] = value
             totalValue += value
-            data[ticker] = {}
-            data[ticker]['value'] = value
-            data[ticker]['targetPerc'] = self.portfolioBalance[ticker]
 
         highestPercDiff = 0
-        highestTicker = ""
-        for ticker in data:
-            currentPerc = (data[ticker]['value'] / totalValue) * 100
-            data[ticker]['currentPerc'] = currentPerc
-            targetPercDiff = (currentPerc - data[ticker]['targetPerc']) * (100 / data[ticker]['targetPerc'])
+        highestBucket = ""
+        for bucket in buckets:
+            currentPerc = (buckets[bucket]['value'] / totalValue) * 100
+            buckets[bucket]['currentPerc'] = currentPerc
+            targetPercDiff = (currentPerc - buckets[bucket]['targetPerc']) * (100 / buckets[bucket]['targetPerc'])
             if targetPercDiff > highestPercDiff:
                 highestPercDiff = targetPercDiff
-                highestTicker = ticker
+                highestBucket = bucket
 
         if not targetTotalValue:
-            targetTotalValue = data[highestTicker]['value'] * (100 / data[highestTicker]['targetPerc'])
+            targetTotalValue = buckets[highestBucket]['value'] * (100 / buckets[highestBucket]['targetPerc'])
 
         dfRows = []
-        for ticker in data:
-            targetValue = targetTotalValue * (data[ticker]['targetPerc'] / 100)
-            targetDiff = targetValue - data[ticker]['value']
+        for tickerGroup in buckets:
+            targetValue = targetTotalValue * (buckets[tickerGroup]['targetPerc'] / 100)
+            targetDiff = targetValue - buckets[tickerGroup]['value']
             dfRows.append([
-                ticker, 
-                format(data[ticker]['currentPerc'], '.2f'), 
-                format(data[ticker]['targetPerc'], '.2f'), 
-                format(data[ticker]['value'], '.2f'), 
+                tickerGroup, 
+                format(buckets[tickerGroup]['currentPerc'], '.2f'), 
+                format(buckets[tickerGroup]['targetPerc'], '.2f'), 
+                format(buckets[tickerGroup]['value'], '.2f'), 
                 format(targetValue, '.2f'), 
                 format(targetDiff, '.2f')
             ])
 
-        outputDf = pd.DataFrame(dfRows, columns=['Ticker', 'Current %', 'Target %', 'Value', 'Target Value', 'Suggestion'])
+        outputDf = pd.DataFrame(dfRows, columns=['Ticker Group', 'Current %', 'Target %', 'Value', 'Target Value', 'Suggestion'])
         print(f'\n{outputDf.to_string(index=False)}\n')
