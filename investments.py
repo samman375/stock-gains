@@ -76,9 +76,15 @@ class Investments:
         else:
             return 0
     
+    def getNextTradeID(self):
+        """
+        Gets the next trade ID
+        """
+        return int(self.maxId) + 1
+    
     def getMaxDividendId(self):
         """
-        Gets largest trade ID
+        Gets largest dividend ID
         """
         if len(self.dividendHistory.keys()) > 0:
             return max([int(dividendId) for dividendId in self.dividendHistory])
@@ -219,7 +225,7 @@ class Investments:
         """
         Add investment to file and update investments
         """
-        tradeId = int(self.maxId) + 1
+        tradeId = self.getNextTradeID()
         self.maxId = tradeId
 
         trade = {}
@@ -244,16 +250,19 @@ class Investments:
             self.investments[ticker]['cost'] = cost
             self.investments[ticker]['totalBrokerage'] = brokerage
             self.investments[ticker]['dividend'] = 0
-        
+
         self.updateInvestmentFile()
 
-        print(f"Trade ID: {tradeId}. Purchased {volume} of {ticker} at ${price} per share on {date} with a ${brokerage} brokerage fee\n")
+        print(f"Trade ID: {tradeId}. Purchased {volume} of {ticker} at ${price} per share on {date} with a ${brokerage} brokerage fee. Trade value: ${cost}\n")
     
 
-    def sellInvestment(self, tradeId:int, ticker:str, price:float, volume:int, brokerage:float, date:str):
+    def sellInvestment(self, ticker:str, price:float, volume:int, brokerage:float, date:str):
         """
         Sell investment from file and update investments
         """
+        tradeId = self.getNextTradeID()
+        self.maxId = tradeId
+
         allSold = False
 
         profit = volume * price - brokerage
@@ -262,7 +271,10 @@ class Investments:
             self.investments[ticker]['cost'] -= profit
             self.investments[ticker]['totalBrokerage'] += brokerage
         elif ticker in self.investments.keys() and volume == self.investments[ticker]['volume']:
-            self.investments.remove(ticker)
+            try:
+                self.investments.pop(ticker)
+            except KeyError:
+                print("Error: invalid ticker")
             allSold = True
         else:
             print("Error: invalid ticker or insufficient volume")
@@ -276,14 +288,13 @@ class Investments:
         trade['brokerage'] = brokerage
         trade['date'] = date
         trade['status'] = 'sell'
-        
+
         self.history[tradeId] = trade
         self.updateHistoryFile()
 
-
-        print(f"Trade ID: {tradeId}. Sold {volume} of {ticker} at ${price} per share on {date} with a ${brokerage} brokerage fee\n")
+        print(f"Trade ID: {tradeId}. Sold {volume} of {ticker} at ${price} per share on {date} with a ${brokerage} brokerage fee. Trade value: ${profit}\n")
         if allSold:
-            print(f"-- All existing {volume} stock sold.\n")
+            print(f"-- All existing {volume} stock sold. --\n")
 
 
     def listInvestments(self):

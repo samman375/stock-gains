@@ -35,13 +35,12 @@ while True:
         inv.buyInvestment(ticker, price, volume, brokerage, date)
 
     elif command == 'sell' or command == 's':
-        tradeId = input('TradeId: ').strip()
         ticker = input('Ticker: ').strip()
         price = float(input('Price: $').strip())
         volume = int(input('Volume: ').strip())
         brokerage = float(input('Brokerage: $').strip())
         date = input('Date (DD-MM-YYYY): ').strip()
-        inv.sellInvestment(tradeId, ticker, price, volume, brokerage, date)
+        inv.sellInvestment(ticker, price, volume, brokerage, date)
 
     elif command == 'ticker-value' or command == 't':
         ticker = input("Ticker Code: ").strip()
