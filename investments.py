@@ -178,7 +178,7 @@ class Investments:
         gain = value - (cost - totalBrokerage)
         netGain = value + dividend - cost
 
-        print(f"{ticker.ljust(8, ' ')}  {fullName.ljust(60, ' ')}  {str(round(price, 2)).rjust(7, ' ')}  {str(round(cost, 2)).rjust(8, ' ')}  {str(round(value, 2)).rjust(8, ' ')}  {(str(round(percGain, 2)) + '%').rjust(7, ' ')}  {(str(round(netPercGain, 2)) + '%').rjust(7, ' ')}   {str(round(gain, 2)).rjust(8, ' ')}  {str(round(netGain, 2)).rjust(8, ' ')}  {str(round(dividend, 2)).rjust(7, ' ')}")
+        print(f"{ticker.ljust(8, ' ')}  {fullName.ljust(60, ' ')}  {str('%.2f' % price).rjust(7, ' ')}  {str('%.2f' % cost).rjust(8, ' ')}  {str('%.2f' % value).rjust(8, ' ')}  {(str('%.2f' % percGain) + '%').rjust(7, ' ')}  {(str('%.2f' % netPercGain) + '%').rjust(7, ' ')}   {str('%.2f' % gain).rjust(8, ' ')}  {str('%.2f' % netGain).rjust(8, ' ')}  {str('%.2f' % dividend).rjust(7, ' ')}")
 
         return {'cost': cost, 'value': value, 'dividend': dividend, 'gain': gain, 'net_gain': netGain, 'brokerage': totalBrokerage}
 
@@ -330,7 +330,7 @@ class Investments:
         percGain = (totalValue / (totalCost - totalBrokerage) - 1) * 100
         netPercGain = (totalNetGain / totalCost) * 100
         print("-" * 149)
-        print(f"          {'Total'.ljust(69, ' ')}  {str(round(totalCost, 2)).rjust(8, ' ')}  {str(round(totalValue, 2)).rjust(8, ' ')}  {(str(round(percGain, 2)) + '%').rjust(7, ' ')}  {(str(round(netPercGain, 2)) + '%').rjust(7, ' ')}   {str(round(totalGain, 2)).rjust(8, ' ')}  {str(round(totalNetGain, 2)).rjust(8, ' ')}  {str(round(totalDividend, 2)).rjust(7, ' ')}")
+        print(f"          {'Total'.ljust(69, ' ')}  {str('%.2f' % totalCost).rjust(8, ' ')}  {str('%.2f' % totalValue).rjust(8, ' ')}  {(str('%.2f' % percGain) + '%').rjust(7, ' ')}  {(str('%.2f' % netPercGain) + '%').rjust(7, ' ')}   {str('%.2f' % totalGain).rjust(8, ' ')}  {str('%.2f' % totalNetGain).rjust(8, ' ')}  {str('%.2f' % totalDividend).rjust(7, ' ')}")
         print()
 
 
@@ -430,12 +430,12 @@ class Investments:
             nTickers += 1
             totalValue += value
 
-            print(f"{ticker.ljust(8, ' ')}  {fullName.ljust(60, ' ')}  {str(round(value, 2)).rjust(8, ' ')}  {str(round(yld * 100, 3)).rjust(5, ' ')}%  {str(round(estReturn, 2)).rjust(11, ' ')}")
+            print(f"{ticker.ljust(8, ' ')}  {fullName.ljust(60, ' ')}  {str('%.2f' % value).rjust(8, ' ')}  {str('%.2f' % (yld * 100)).rjust(5, ' ')}%  {str('%.2f' % estReturn).rjust(11, ' ')}")
 
         avgYield = sumYield / nTickers
 
         print("-" * 101)
-        print(f"          {'Total'.ljust(60, ' ')}  {str(round(totalValue, 2)).rjust(8, ' ')}  {str(round(avgYield * 100, 3)).rjust(5, ' ')}%  {str(round(totalReturn, 2)).rjust(11, ' ')}\n")
+        print(f"          {'Total'.ljust(60, ' ')}  {str('%.2f' % totalValue).rjust(8, ' ')}  {str('%.2f' % (avgYield * 100)).rjust(5, ' ')}%  {str('%.2f' % totalReturn).rjust(11, ' ')}\n")
 
 
     def stockPerformance(self):
@@ -536,14 +536,14 @@ class Investments:
             fullName = info['fullName']
             value = info['value']
             cost = info['cost']
-            valuePrc = str(round((value / totalValue) * 100, 2))
-            costPrc = str(round((cost / totalCost) * 100, 2))
+            valuePrc = str('%.2f' % ((value / totalValue) * 100))
+            costPrc = str('%.2f' % ((cost / totalCost) * 100))
 
-            print(f"{ticker.ljust(8, ' ')}  {fullName.ljust(60, ' ')}  {str(round(value, 2)).rjust(8, ' ')}  {str(round(cost, 2)).rjust(8, ' ')}  {valuePrc.rjust(7, ' ')}%  {costPrc.rjust(7, ' ')}%")
+            print(f"{ticker.ljust(8, ' ')}  {fullName.ljust(60, ' ')}  {str('%.2f' % value).rjust(8, ' ')}  {str('%.2f' % cost).rjust(8, ' ')}  {valuePrc.rjust(7, ' ')}%  {costPrc.rjust(7, ' ')}%")
 
         
         print("-" * 111)
-        print(f"          {'Total'.ljust(60, ' ')}  {str(round(totalValue, 2)).rjust(8, ' ')}  {str(round(totalCost, 2)).rjust(8, ' ')}\n")
+        print(f"          {'Total'.ljust(60, ' ')}  {str('%.2f' % totalValue).rjust(8, ' ')}  {str('%.2f' % totalCost).rjust(8, ' ')}\n")
 
 
     def marketPercentage(self):
