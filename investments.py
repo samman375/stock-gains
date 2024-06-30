@@ -100,18 +100,20 @@ class Investments:
         tickerData = yf.Tickers(tickers)
         data = {}
         for ticker in tickers.split():
-            # print(tickerData.tickers[ticker].info)
-            data[ticker] = {}
-            data[ticker]['price'] = tickerData.tickers[ticker].info['ask']
-            data[ticker]['fullName'] = tickerData.tickers[ticker].info['longName']
-            data[ticker]['yield'] = tickerData.tickers[ticker].info.get('yield', 0)
-            data[ticker]['quoteType'] = tickerData.tickers[ticker].info['quoteType']
-            data[ticker]['ytdReturn'] = tickerData.tickers[ticker].info.get('ytdReturn', None)
-            data[ticker]['threeYrReturn'] = tickerData.tickers[ticker].info.get('threeYearAverageReturn', None)
-            data[ticker]['fiveYrReturn'] = tickerData.tickers[ticker].info.get('fiveYearAverageReturn', None)
+            data[ticker] = {
+                'price': tickerData.tickers[ticker].info['ask'],
+                'fullName': tickerData.tickers[ticker].info['longName'],
+                'yield': tickerData.tickers[ticker].info.get('yield', 0),
+                'quoteType': tickerData.tickers[ticker].info['quoteType'],
+                'peRatio': tickerData.tickers[ticker].info.get('trailingPE', None),
+                'volume': tickerData.tickers[ticker].info['volume'],
+                'ytdReturn': tickerData.tickers[ticker].info.get('ytdReturn', None),
+                'threeYrReturn': tickerData.tickers[ticker].info.get('threeYearAverageReturn', None),
+                'fiveYrReturn': tickerData.tickers[ticker].info.get('fiveYearAverageReturn', None)
+            }
 
         return data
-    
+
     def getTickerPrices(self, tickers:str):
         """
         Similar to `getTickerData` but only gets price
@@ -444,14 +446,17 @@ class Investments:
 
         data = self.getTickerData(self.makeTickerString())
         
-        print(f"\nTicker    {'Full Name'.ljust(60, ' ')}  Value     YTD     3YR     5YR")
-        print("-" * 9 + "+" + "-" * 61 + "+" + "-" * 9 + "+" + "-" * 8 + "+" + "-" * 8 + "+" + "-" * 8)
+        print(f"\nTicker    {'Full Name'.ljust(60, ' ')}  Value     YTD      3YR      5YR      PE Ratio  Volume")
+        print("-" * 9 + "+" + "-" * 61 + "+" + "-" * 9 + "+" + "-" * 8 + "+" + "-" * 8 + "+" + "-" * 8 + "+" + "-" * 9 + "+" + "-" * 7)
 
         sumYtd = 0
         sumThreeYrRet = 0
         sumFiveYrRet = 0
         nTickers = 0
         totalValue = 0
+        totalPeRatio = 0
+        totalPeRatioValue = 0
+        totalVolume = 0
 
         for ticker, info in data.items():
             fullName = info['fullName']
@@ -459,36 +464,48 @@ class Investments:
             ytd = info['ytdReturn']
             threeYrReturn = info['threeYrReturn']
             fiveYrReturn = info['fiveYrReturn']
+            peRatio = info['peRatio']
+            volume = info['volume']
 
             nTickers += 1
             totalValue += value
+            totalVolume += volume * value
             
             if ytd:
                 sumYtd += ytd
-                ytd = str(round(ytd * 100, 2))
+                ytd = str("%.2f" % (ytd * 100))
             else:
                 ytd = '- '
             
             if threeYrReturn:
                 sumThreeYrRet += threeYrReturn
-                threeYrReturn = str(round(threeYrReturn * 100, 2))
+                threeYrReturn = str("%.2f" % (threeYrReturn * 100))
             else:
                 threeYrReturn = '- '
             
             if fiveYrReturn:
                 sumFiveYrRet += fiveYrReturn
-                fiveYrReturn = str(round(fiveYrReturn * 100, 2))
+                fiveYrReturn = str("%.2f" % (fiveYrReturn * 100))
             else:
                 fiveYrReturn = '- '
+            
+            if peRatio:
+                totalPeRatio += peRatio * value
+                totalPeRatioValue += value
+                peRatio = str("%.2f" % peRatio)
+            else:
+                peRatio = '- '
 
-            print(f"{ticker.ljust(8, ' ')}  {fullName.ljust(60, ' ')}  {str(round(value, 2)).rjust(8, ' ')}  {ytd.rjust(6, ' ')}%  {threeYrReturn.rjust(6, ' ')}%  {fiveYrReturn.rjust(6, ' ')}%")
+            print(f"{ticker.ljust(8, ' ')}  {fullName.ljust(60, ' ')}  {str('%.2f' % value).rjust(8, ' ')}  {ytd.rjust(6, ' ')}%  {threeYrReturn.rjust(6, ' ')}%  {fiveYrReturn.rjust(6, ' ')}%     {peRatio.rjust(5, ' ')}  {str(volume).rjust(7, ' ')}")
 
-        avgYtd = str(round(sumYtd * 100 / nTickers, 2))
-        avgThreeYrRet = str(round(sumThreeYrRet * 100 / nTickers, 2))
-        avgFiveYrRet = str(round(sumFiveYrRet * 100 / nTickers, 2))
+        avgYtd = str("%.2f" % (sumYtd * 100 / nTickers))
+        avgThreeYrRet = str("%.2f" % (sumThreeYrRet * 100 / nTickers))
+        avgFiveYrRet = str("%.2f" % (sumFiveYrRet * 100 / nTickers))
+        avgPeRatio = str("%.2f" % (totalPeRatio / totalPeRatioValue))
+        avgVolume = str(round(totalVolume / totalValue))
 
-        print("-" * 108)
-        print(f"          {'Total'.ljust(60, ' ')}  {str(round(totalValue, 2)).rjust(8, ' ')}  {avgYtd.rjust(6, ' ')}%  {avgThreeYrRet.rjust(6, ' ')}%  {avgFiveYrRet.rjust(6, ' ')}%\n")
+        print("-" * 126)
+        print(f"          {'Total'.ljust(60, ' ')}  {str('%.2f' % totalValue).rjust(8, ' ')}  {avgYtd.rjust(6, ' ')}%  {avgThreeYrRet.rjust(6, ' ')}%  {avgFiveYrRet.rjust(6, ' ')}%     {avgPeRatio.rjust(5, ' ')}  {avgVolume.rjust(7, ' ')}\n")
 
     
     def investmentPercentage(self):
