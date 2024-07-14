@@ -14,6 +14,7 @@ while True:
         's' or 'sell':          Add new sale purchase
         'v' or 'value':         Get total portfolio value
         't' or 'ticker-value':  Get value of specific owned ticker
+        'tp' pr 'ticker-perf':  Get performance for a particular ticker
         'hs' or 'history':      Investment history
         'd' or 'dividend':      Add received dividend
         'e' or 'estimate':      Get dividend estimate for next 12 months
@@ -45,6 +46,10 @@ while True:
     elif command == 'ticker-value' or command == 't':
         ticker = input("Ticker Code: ").strip()
         inv.investmentValue(ticker)
+    
+    elif command == 'ticker-perf' or command == 'tp':
+        ticker = input("Ticker Codes (Space separated): ").strip()
+        inv.tickerPerformance(ticker)
 
     elif command == 'value' or command == 'v':
         inv.listInvestments()

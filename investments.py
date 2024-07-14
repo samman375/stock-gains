@@ -507,6 +507,37 @@ class Investments:
         print("-" * 126)
         print(f"          {'Total'.ljust(60, ' ')}  {str('%.2f' % totalValue).rjust(8, ' ')}  {avgYtd.rjust(6, ' ')}%  {avgThreeYrRet.rjust(6, ' ')}%  {avgFiveYrRet.rjust(6, ' ')}%     {avgPeRatio.rjust(5, ' ')}  {avgVolume.rjust(7, ' ')}\n")
 
+    def tickerPerformance(self, tickers):
+        """
+        Output ticker performance over YTD, 3Yrs, 5Yrs where available
+        """
+
+        try:
+            data = self.getTickerData(tickers)
+        except:
+            print(f"\n Invalid ticker(s) provided: {tickers}.\n")
+            return
+        
+        print(f"\nTicker    {'Full Name'.ljust(60, ' ')}  Price     YTD      3YR      5YR      PE Ratio  Volume")
+        print("-" * 9 + "+" + "-" * 61 + "+" + "-" * 9 + "+" + "-" * 8 + "+" + "-" * 8 + "+" + "-" * 8 + "+" + "-" * 9 + "+" + "-" * 7)
+
+        for ticker, info in data.items():
+            fullName = info['fullName']
+            price = info['price']
+            ytd = info['ytdReturn']
+            threeYrReturn = info['threeYrReturn']
+            fiveYrReturn = info['fiveYrReturn']
+            peRatio = info['peRatio']
+            volume = info['volume']
+
+            ytd = str("%.2f" % (ytd * 100)) if ytd else '- '
+            threeYrReturn = str("%.2f" % (threeYrReturn * 100)) if threeYrReturn else '- '
+            fiveYrReturn = str("%.2f" % (fiveYrReturn * 100)) if fiveYrReturn else '- '
+            peRatio = str("%.2f" % peRatio) if peRatio else '- '
+
+            print(f"{ticker.ljust(8, ' ')}  {fullName.ljust(60, ' ')}  {str('%.2f' % price).rjust(8, ' ')}  {ytd.rjust(6, ' ')}%  {threeYrReturn.rjust(6, ' ')}%  {fiveYrReturn.rjust(6, ' ')}%     {peRatio.rjust(5, ' ')}  {str(volume).rjust(7, ' ')}")
+
+        print()
     
     def investmentPercentage(self):
         data = self.getTickerData(self.makeTickerString())
