@@ -22,7 +22,7 @@ Entering `help` as the command when prompted will return a full list of availabl
 Investment history must currently be implemented manually using the `buy` command. Scraping of a order history file as input is planned
 as a future feature.
 
-Data is stored locally in `/store`.
+Data is stored locally in `/store` as a free solution and to avoid maintaining an active database connection.
 
 ### Recommended:
 
