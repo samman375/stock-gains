@@ -109,7 +109,11 @@ class Investments:
                 'volume': tickerData.tickers[ticker].info['volume'],
                 'ytdReturn': tickerData.tickers[ticker].info.get('ytdReturn', None),
                 'threeYrReturn': tickerData.tickers[ticker].info.get('threeYearAverageReturn', None),
-                'fiveYrReturn': tickerData.tickers[ticker].info.get('fiveYearAverageReturn', None)
+                'fiveYrReturn': tickerData.tickers[ticker].info.get('fiveYearAverageReturn', None),
+                'fiftyTwoWkLow': tickerData.tickers[ticker].info.get('fiftyTwoWeekLow', None),
+                'fiftyTwoWkHigh': tickerData.tickers[ticker].info.get('fiftyTwoWeekHigh', None),
+                'fiftyDayAvg': tickerData.tickers[ticker].info.get('fiftyDayAverage', None),
+                'twoHundredDayAvg': tickerData.tickers[ticker].info.get('twoHundredDayAverage', None),
             }
 
         return data
@@ -147,14 +151,15 @@ class Investments:
             json.dump(self.portfolioBalance, f)
             f.close()
 
-    def makeTickerString(self):
+    def makeTickerString(self, tickers=None):
         """
         Produces a string of space separated tickers for use in yfinance lookup
         """
         # TODO: Add sort by date option
         
         tickersStr = ""
-        tickers = [k for k, _ in sorted(self.investments.items(), key=lambda x:x[1]['cost'], reverse=True)]
+        if not tickers:
+            tickers = [k for k, _ in sorted(self.investments.items(), key=lambda x:x[1]['cost'], reverse=True)]
         for ticker in tickers:
             tickersStr += f"{ticker} "
         return tickersStr.strip()
@@ -212,11 +217,23 @@ class Investments:
         print('\nCurrent Portfolio Balance Targets:')
         self.printPortfolioBalanceTargets()
 
-    def sortByCost(x, y):
+    def sortByCost(self, x, y):
         if x['cost'] >= y['cost']:
             return x
         else:
             return y
+    
+    def formatPercentage(self, value, inclPlus=False):
+        """
+        Given a percentage value:
+        - Formats value to 2 decimal places
+        - (optional) Prepends a '+' if a percentage is >= 0
+        - Appends '%'
+        """
+        if value >= 0 and inclPlus:
+                return f'+{format(value, ".2f")}%'
+        else:
+            return f'{format(value, ".2f")}%'
 
     ###########
     # METHODS #
@@ -514,6 +531,7 @@ class Investments:
 
         try:
             data = self.getTickerData(tickers)
+
         except:
             print(f"\n Invalid ticker(s) provided: {tickers}.\n")
             return
@@ -623,9 +641,11 @@ class Investments:
         
         totalValue = 0
         buckets = {}
+        allTickers = []
         for tickerGroup in self.portfolioBalance.keys():            
             buckets[tickerGroup] = {}
             tickers = tickerGroup.split('+')
+            allTickers += tickers
             buckets[tickerGroup]["tickers"] = tickers
             buckets[tickerGroup]["targetPerc"] = self.portfolioBalance[tickerGroup]
 
@@ -652,13 +672,38 @@ class Investments:
             targetTotalValue = buckets[highestBucket]['value'] * (100 / buckets[highestBucket]['targetPerc'])
 
         dfRows = []
+        tickerData = self.getTickerData(self.makeTickerString(allTickers))
+        
+        for ticker in tickerData:
+            
+            price = tickerData[ticker]['price']
+            prcFromfiftyTwoWkHigh = (price / tickerData[ticker]['fiftyTwoWkHigh'] - 1) * 100
+            prcFromfiftyTwoWkLow = (price / tickerData[ticker]['fiftyTwoWkLow'] - 1) * 100
+            prcFromfiftyDayAvg = (price / tickerData[ticker]['fiftyDayAvg'] - 1) * 100
+            prcFromTwoHundredDayAvg = (price / tickerData[ticker]['twoHundredDayAvg'] - 1) * 100
+
+            dfRows.append([
+                ticker,
+                tickerData[ticker]['peRatio'],
+                self.formatPercentage(prcFromfiftyTwoWkHigh, True),
+                self.formatPercentage(prcFromfiftyTwoWkLow, True),
+                self.formatPercentage(prcFromfiftyDayAvg, True),
+                self.formatPercentage(prcFromTwoHundredDayAvg, True)
+            ])
+
+        outputDf = pd.DataFrame(dfRows, columns=['Ticker', 'P/E Ratio', '52wk High Diff', '52wk Low Diff', '50-Day Avg Diff', '200-Day Avg Diff'])
+        print(f'\n{outputDf.to_string(index=False)}\n')
+
+        dfRows = []
         for tickerGroup in buckets:
+            
             targetValue = targetTotalValue * (buckets[tickerGroup]['targetPerc'] / 100)
             targetDiff = targetValue - buckets[tickerGroup]['value']
+            
             dfRows.append([
                 tickerGroup, 
-                format(buckets[tickerGroup]['currentPerc'], '.2f'), 
-                format(buckets[tickerGroup]['targetPerc'], '.2f'), 
+                self.formatPercentage(buckets[tickerGroup]['currentPerc']), 
+                self.formatPercentage(buckets[tickerGroup]['targetPerc']), 
                 format(buckets[tickerGroup]['value'], '.2f'), 
                 format(targetValue, '.2f'), 
                 format(targetDiff, '.2f')
