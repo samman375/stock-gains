@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS target_balance (
 CREATE TABLE IF NOT EXISTS current_portfolio (
     ticker VARCHAR(255) NOT NULL,
     cost DOUBLE PRECISION NOT NULL,
+    volume INT NOT NULL,
     total_brokerage DOUBLE PRECISION NOT NULL,
     dividends DOUBLE PRECISION NOT NULL,
     PRIMARY KEY (ticker)

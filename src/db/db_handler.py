@@ -1,7 +1,5 @@
 import psycopg2
-from config import DB_CONFIG
-
-TABLE_SCHEMA_FILE = "schema.sql"
+from config import DB_CONFIG, TABLE_SCHEMA_FILE
 
 def get_connection(default_db=False):
     """
@@ -32,7 +30,6 @@ def target_database_exists(default_conn):
     exists = cur.fetchone() is not None
     print("Database exists." if exists else "Database does not exist.")
     return exists
-
 
 def create_database(default_conn):
     """
@@ -68,11 +65,11 @@ def setup_tables(conn):
 def database_setup():
     """
     Sets up database if not already created.
-    Loads most recent backup if exists.
+    Also creates tables if not already created.
+
     Returns:
-    - conn:database connection.
+    - conn: database connection.
     """
-    # Create database if doesn't exist
     default_conn = get_connection(default_db=True)
     if not target_database_exists(default_conn):
         create_database(default_conn)
@@ -81,7 +78,5 @@ def database_setup():
     conn = get_connection()
 
     setup_tables(conn)
-
-    # TODO: call restore_database if db is empty
 
     return conn

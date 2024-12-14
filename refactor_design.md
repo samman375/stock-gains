@@ -1,10 +1,13 @@
 # Refactor Design
 
+Written by samman375, December 2024
+
 ## Requirements
 - Improve startup performance
     - Remove use of csv files
 - Retain ease of data storage without any operations costs that come with cloud deployments
 - Implement auto backup of data
+    - give user option to restore from backup
 - Improve code readability
     - breakup files + introduce directory hierachies
 - Standardise data display across functions
@@ -60,18 +63,20 @@
 ## Hierarchy Redesign
 
 - src/
-    - db/
-        - db_handler.py     (contains db setup logic/interaction)
-        - crud.py           (contains all queries)
-        - backup_handler.py (read/write to backups)
-        - config.py         (contains db setup variables)
-        - schema.sql        (contaisn table creation schemas)
-        - migrations/       (for future schema migrations)
-    - utils/
-        - (All helper logic goes here)
-        - validation.py     (contains input validation functions)
     - commands/
         - (All app commands go here)
+    - db/
+        - db_handler.py         (contains db setup logic/interaction)
+        - crud.py               (contains all queries)
+        - backup_handler.py     (read/write to backups)
+        - config.py             (contains db setup variables)
+        - schema.sql            (contaisn table creation schemas)
+        - migrations/           (for future schema migrations)
+    - requests/
+        - yfinance_fetcher.py   (contains yfinance interactions)
+    - utils/
+        - (All helper logic goes here)
+        - validation.py         (contains input validation functions)
     - stock_gains.py (main)
 - tests/
 - README.md

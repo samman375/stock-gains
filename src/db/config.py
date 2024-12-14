@@ -1,5 +1,6 @@
 import os
 
+TABLE_SCHEMA_FILE = "schema.sql"
 DB_CONFIG = {
     "host": "localhost",
     "port": 5432,
