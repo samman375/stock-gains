@@ -22,6 +22,22 @@ def getDistinctTickers(conn):
         print(f"Database error: {e}")
         return []
 
+def checkIfTickerExists(conn, ticker):
+    """
+    Checks if a ticker exists in the current_portfolio table.
+
+    params:
+    - conn: db connection
+    - ticker: ticker to check
+    """
+    try:
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM current_portfolio WHERE ticker = %s;", (ticker,))
+                return True if cur.fetchone() else False
+    except psycopg2.Error as e:
+        print(f"Database error: {e}")
+
 def getCurrentPortfolioTickerData(conn, ticker):
     """
     Returns data from the current_portfolio table for a given ticker.
@@ -56,3 +72,60 @@ def getCurrentPortfolioTickerData(conn, ticker):
     except psycopg2.Error as e:
         print(f"Database error: {e}")
         return []
+
+def insertNewInvestmentHistory(conn, ticker, price, volume, brokerage, date, status):
+    """
+    Insert new investment history into investment_history table
+
+    Note: Function does not contain a try/with block as it's meant to be use in an atomic function with a separate db call.
+
+    Params:
+    - conn: db connection
+    - ticker: ticker of the new investment
+    - volume: volume of the new investment
+    - price: price of the new investment
+    - brokerage: brokerage of the new investment
+    - date: date of the new investment
+    - status: BUY or SELL status
+    """
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO investment_history (ticker, price, volume, brokerage, date, status)
+        VALUES (%s, %s, %s, %s, %s, %s);
+    """, (ticker, price, volume, brokerage, date, status))
+    cur.close()
+
+def updatePortfolio(conn, ticker, price, volume, brokerage):
+    """
+    Updates the `current_portfolio` table with a new investment. 
+    If the ticker already exists, it updates the values. 
+    If the ticker does not exist, it inserts a new row.
+    
+    Note: Function does not contain a try/with block as it's meant to be use in an atomic function with a separate db call.
+
+    Params:
+    - conn: db connection
+    - ticker (str): The ticker symbol.
+    - price (float): The price of the investment.
+    - volume (int): The volume of the investment.
+    - brokerage (float): The brokerage fees.
+    """
+    isExistingTicker = checkIfTickerExists(conn, ticker)
+    cost = price * volume + brokerage
+    cur = conn.cursor()
+    if isExistingTicker:
+        # Update existing record
+        cur.execute("""
+            UPDATE current_portfolio
+            SET cost = cost + %s,
+                total_brokerage = total_brokerage + %s,
+                volume = volume + %s
+            WHERE ticker = %s;
+        """, (cost, brokerage, volume, ticker))
+    else:
+        # Insert new record
+        cur.execute("""
+            INSERT INTO current_portfolio (ticker, cost, total_brokerage, volume)
+            VALUES (%s, %s, %s, %s);
+        """, (ticker, cost, brokerage, volume))
+    cur.close()

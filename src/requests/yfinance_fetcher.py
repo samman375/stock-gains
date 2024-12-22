@@ -2,6 +2,19 @@ import yfinance as yf
 
 from utils.yfinance_utils import makeTickerString
 
+def isValidTicker(ticker:str):
+    """
+    Check if ticker is valid in yfinance
+
+    Params:
+    - ticker: ticker to check
+    """
+    try:
+        yf.Ticker(ticker)
+        return True
+    except:
+        return False
+
 def getTickerData(conn, tickers:str):
     """
     Get data for tickers from Yahoo Finance API
