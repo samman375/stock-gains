@@ -8,7 +8,7 @@ def dividend(conn):
     Add dividend to database
     """
     ticker = prompt('Ticker: ', validator=v.ExistingTickerValidator(conn))
-    value = prompt('Total Value: $', validator=v.NonNegativeFloatValidator())
+    value = float(prompt('Total Value: $', validator=v.NonNegativeFloatValidator()))
     date = prompt('Date (YYYY-MM-DD): ', validator=v.DateValidator())
 
     try:

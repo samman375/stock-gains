@@ -8,9 +8,9 @@ def sellInvestment(conn):
     Add sale to database
     """
     ticker = prompt('Ticker: ', validator=v.TickerValidator(conn))
-    price = prompt('Price: $', validator=v.NonNegativeFloatValidator())
-    volume = prompt('Volume: ', validator=v.NonNegativeIntValidator())
-    brokerage = prompt('Brokerage: $', validator=v.NonNegativeFloatValidator())
+    price = float(prompt('Price: $', validator=v.NonNegativeFloatValidator()))
+    volume = int(prompt('Volume: ', validator=v.NonNegativeIntValidator()))
+    brokerage = float(prompt('Brokerage: $', validator=v.NonNegativeFloatValidator()))
     date = prompt('Date (YYYY-MM-DD): ', validator=v.DateValidator())
     profit = volume * price - brokerage
 
