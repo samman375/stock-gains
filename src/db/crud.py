@@ -1,5 +1,7 @@
 import psycopg2
 
+import db.queries as q
+
 def getDistinctTickers(conn):
     """
     Returns a list of all distinct tickers in current portfolio, ordered by cost
@@ -7,14 +9,10 @@ def getDistinctTickers(conn):
     try:
         with conn:
             with conn.cursor() as cur:
-                cur.execute("""
-                    SELECT DISTINCT ticker 
-                    FROM current_portfolio
-                    ORDER BY cost DESC;
-                """)
+                cur.execute(q.distinctTickersQuery())
                 result = cur.fetchall()
 
-                tickers = [row[0] for row in result]
+                tickers = [row for row in result]
 
                 return tickers
 
@@ -33,8 +31,10 @@ def checkIfTickerExists(conn, ticker):
     try:
         with conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT * FROM current_portfolio WHERE ticker = %s;", (ticker,))
+                cur.execute(q.currentPortfolioTickerQuery(ticker))
+
                 return True if cur.fetchone() else False
+
     except psycopg2.Error as e:
         print(f"Database error: {e}")
 
@@ -53,11 +53,7 @@ def getCurrentPortfolioTickerData(conn, ticker):
     try:
         with conn:
             with conn.cursor() as cur:
-                cur.execute("""
-                    SELECT ticker, cost, volume, total_brokerage, dividends
-                    FROM current_portfolio
-                    WHERE ticker = %s;
-                """, (ticker,))
+                cur.execute(q.currentPortfolioTickerQuery(ticker))
                 result = cur.fetchone()
                 tickerData = {
                     'ticker': result[0],
@@ -89,10 +85,7 @@ def insertNewInvestmentHistory(conn, ticker, price, volume, brokerage, date, sta
     - status: BUY or SELL status
     """
     cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO investment_history (ticker, price, volume, brokerage, date, status)
-        VALUES (%s, %s, %s, %s, %s, %s);
-    """, (ticker, price, volume, brokerage, date, status))
+    cur.execute(q.investmentHistoryInsert(ticker, price, volume, brokerage, date, status))
     cur.close()
 
 def addToPortfolio(conn, ticker, price, volume, brokerage):
@@ -115,19 +108,10 @@ def addToPortfolio(conn, ticker, price, volume, brokerage):
     cur = conn.cursor()
     if isExistingTicker:
         # Update existing record
-        cur.execute("""
-            UPDATE current_portfolio
-            SET cost = cost + %s,
-                total_brokerage = total_brokerage + %s,
-                volume = volume + %s
-            WHERE ticker = %s;
-        """, (cost, brokerage, volume, ticker))
+        cur.execute(q.currentPortfolioBuyUpdate(cost, brokerage, volume, ticker))
     else:
         # Insert new record
-        cur.execute("""
-            INSERT INTO current_portfolio (ticker, cost, total_brokerage, volume)
-            VALUES (%s, %s, %s, %s);
-        """, (ticker, cost, brokerage, volume))
+        cur.execute(q.currentPortfolioInsert(ticker, cost, brokerage, volume))
     cur.close()
 
 def reduceFromPortfolio(conn, ticker, price, volume, brokerage):
@@ -149,19 +133,10 @@ def reduceFromPortfolio(conn, ticker, price, volume, brokerage):
     profit = price * volume - brokerage
     cur = conn.cursor()
     if isExistingTicker:
-        cur.execute("""
-            UPDATE current_portfolio
-            SET cost = cost - %s,
-                total_brokerage = total_brokerage + %s,
-                volume = volume - %s
-            WHERE ticker = %s;
-        """, (profit, brokerage, volume, ticker))
+        cur.execute(q.currentPortfolioSellUpdate(profit, brokerage, volume, ticker))
 
         # Check if the volume is 0 or less and delete the row if true
-        cur.execute("""
-            DELETE FROM current_portfolio
-            WHERE ticker = %s AND volume <= 0;
-        """, (ticker))
+        cur.execute(q.currentPortfolioDeleteIfZero(ticker))
     else:
         raise Exception(f"Ticker {ticker} does not exist in portfolio. Nothing to sell")
     cur.close()
@@ -179,9 +154,6 @@ def recordDividend(conn, ticker, value, date):
     try:
         with conn:
             with conn.cursor() as cur:
-                cur.execute("""
-                    INSERT INTO dividends (ticker, date, distribution_value)
-                    VALUES (%s, %s, %s, %s);
-                """, (ticker, date, value))
+                cur.execute(q.dividendsInsert(ticker, date, value))
     except psycopg2.Error as e:
         print(f"Database error: {e}")

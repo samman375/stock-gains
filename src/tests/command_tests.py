@@ -1,15 +1,16 @@
 import unittest
 from unittest.mock import patch, MagicMock
+
 from commands.buy import buyInvestment
 from commands.dividend import dividend
 from commands.sell import sellInvestment
 
 class TestCommands(unittest.TestCase):
+
     @patch('commands.buy.prompt')
     @patch('commands.buy.insertNewInvestmentHistory')
     @patch('commands.buy.addToPortfolio')
-    def test_buy_investment(self, mock_add, mock_insert, mock_prompt):
-        print("\nTesting buyInvestment() function:")
+    def testBuyInvestment(self, mock_add, mock_insert, mock_prompt):
         mock_prompt.side_effect = ['AAPL', '150.0', '10', '5.0', '2023-10-10']
         mock_conn = MagicMock()
 
@@ -25,8 +26,7 @@ class TestCommands(unittest.TestCase):
     @patch('commands.sell.prompt')
     @patch('commands.sell.insertNewInvestmentHistory')
     @patch('commands.sell.reduceFromPortfolio')
-    def test_sell_investment(self, mock_reduce, mock_insert, mock_prompt):
-        print("\nTesting sellInvestment() function:")
+    def testSellInvestment(self, mock_reduce, mock_insert, mock_prompt):
         mock_prompt.side_effect = ['AAPL', '150.0', '10', '5.0', '2023-10-10']
         mock_conn = MagicMock()
 
@@ -41,8 +41,7 @@ class TestCommands(unittest.TestCase):
 
     @patch('commands.dividend.prompt')
     @patch('commands.dividend.recordDividend')
-    def test_dividend(self, mock_record, mock_prompt):
-        print("\nTesting dividend() function:")
+    def testDividend(self, mock_record, mock_prompt):
         mock_prompt.side_effect = ['AAPL', '100.0', '2023-10-10']
         mock_conn = MagicMock()
 
