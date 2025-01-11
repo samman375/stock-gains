@@ -95,7 +95,7 @@ def insertNewInvestmentHistory(conn, ticker, price, volume, brokerage, date, sta
     """, (ticker, price, volume, brokerage, date, status))
     cur.close()
 
-def updatePortfolio(conn, ticker, price, volume, brokerage):
+def addToPortfolio(conn, ticker, price, volume, brokerage):
     """
     Updates the `current_portfolio` table with a new investment. 
     If the ticker already exists, it updates the values. 
@@ -129,3 +129,59 @@ def updatePortfolio(conn, ticker, price, volume, brokerage):
             VALUES (%s, %s, %s, %s);
         """, (ticker, cost, brokerage, volume))
     cur.close()
+
+def reduceFromPortfolio(conn, ticker, price, volume, brokerage):
+    """
+    Updates the `current_portfolio` table with a sale action. 
+    If the ticker already exists, it updates the values.
+    If the ticker value becomes non-positive, it deletes the row.
+    
+    Note: Function does not contain a try/with block as it's meant to be use in an atomic function with a separate db call.
+
+    Params:
+    - conn: db connection
+    - ticker (str): The ticker symbol.
+    - price (float): The price of the sale.
+    - volume (int): The volume of the sale.
+    - brokerage (float): The brokerage fees.
+    """
+    isExistingTicker = checkIfTickerExists(conn, ticker)
+    profit = price * volume - brokerage
+    cur = conn.cursor()
+    if isExistingTicker:
+        cur.execute("""
+            UPDATE current_portfolio
+            SET cost = cost - %s,
+                total_brokerage = total_brokerage + %s,
+                volume = volume - %s
+            WHERE ticker = %s;
+        """, (profit, brokerage, volume, ticker))
+
+        # Check if the volume is 0 or less and delete the row if true
+        cur.execute("""
+            DELETE FROM current_portfolio
+            WHERE ticker = %s AND volume <= 0;
+        """, (ticker))
+    else:
+        raise Exception(f"Ticker {ticker} does not exist in portfolio. Nothing to sell")
+    cur.close()
+
+def recordDividend(conn, ticker, value, date):
+    """
+    Records a dividend payment in the `dividends` table.
+
+    Params:
+    - conn: db connection
+    - ticker (str): The ticker symbol.
+    - value (float): The total value of the dividend.
+    - date (str): The date of the dividend payment.
+    """
+    try:
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    INSERT INTO dividends (ticker, date, distribution_value)
+                    VALUES (%s, %s, %s, %s);
+                """, (ticker, date, value))
+    except psycopg2.Error as e:
+        print(f"Database error: {e}")

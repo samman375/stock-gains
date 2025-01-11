@@ -1,7 +1,9 @@
 from prompt_toolkit import prompt
 
-from commands.portfolio_value import portfolioValue
 from commands.buy import buyInvestment
+from commands.dividend import dividend
+from commands.portfolio_value import portfolioValue
+from commands.sell import sellInvestment
 from db.backup_handler import backup_database, restore_database
 from db.db_handler import database_setup
 from utils.command_completer import COMMANDS
@@ -21,9 +23,9 @@ def main():
             elif user_input == "buy":
                 buyInvestment(conn)
             elif user_input == "sell":
-                break
+                sellInvestment(conn)
             elif user_input == "dividend":
-                break
+                dividend(conn)
             elif user_input == "settings":
                 break
 

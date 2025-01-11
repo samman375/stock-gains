@@ -27,6 +27,18 @@ class DateValidator(Validator):
         if not date_pattern.match(document.text):
             raise ValidationError(message='Invalid date format. Use YYYY-MM-DD.', cursor_position=len(document.text))
 
+class ExistingTickerValidator(Validator):
+    """
+    Checks if a provided ticker exists in database
+    """
+    def __init__(self, conn):
+        self.conn = conn
+
+    def validate(self, document):
+        ticker = document.text
+        if not checkIfTickerExists(self.conn, ticker):
+            raise ValidationError(message='Ticker does not exist in database.', cursor_position=len(ticker))
+
 class TickerValidator(Validator):
     """
     Checks if a provided ticker exists in database or is valid in yfinance
