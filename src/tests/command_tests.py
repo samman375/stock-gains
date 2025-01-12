@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
+from prompt_toolkit.key_binding import KeyBindings
 
 from commands.buy import buyInvestment
 from commands.dividend import dividend
@@ -13,8 +14,9 @@ class TestCommands(unittest.TestCase):
     def testBuyInvestment(self, mock_add, mock_insert, mock_prompt):
         mock_prompt.side_effect = ['AAPL', '150.0', '10', '5.0', '2023-10-10']
         mock_conn = MagicMock()
+        mock_key_bindings = KeyBindings()
 
-        buyInvestment(mock_conn)
+        buyInvestment(mock_conn, mock_key_bindings)
 
         mock_insert.assert_called_once_with(mock_conn, 'AAPL', 150.0, 10, 5.0, '2023-10-10', 'BUY')
         mock_add.assert_called_once_with(mock_conn, 'AAPL', 150.0, 10, 5.0)
@@ -29,8 +31,9 @@ class TestCommands(unittest.TestCase):
     def testSellInvestment(self, mock_reduce, mock_insert, mock_prompt):
         mock_prompt.side_effect = ['AAPL', '150.0', '10', '5.0', '2023-10-10']
         mock_conn = MagicMock()
+        mock_key_bindings = KeyBindings()
 
-        sellInvestment(mock_conn)
+        sellInvestment(mock_conn, mock_key_bindings)
 
         mock_insert.assert_called_once_with(mock_conn, 'AAPL', 150.0, 10, 5.0, '2023-10-10', 'SELL')
         mock_reduce.assert_called_once_with(mock_conn, 'AAPL', 150.0, 10, 5.0)
