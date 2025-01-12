@@ -1,6 +1,6 @@
 import pandas as pd
 
-from requests.yfinance_fetcher import getTickerData
+from requests.yfinance_fetcher import getYfinanceTickerData
 from utils.data_processing import tickerValueExtractor
 
 def portfolioValue(conn):
@@ -11,7 +11,7 @@ def portfolioValue(conn):
     - conn: db connection
     """
 
-    data = getTickerData()
+    data = getYfinanceTickerData()
 
     outputDfRows = []
 

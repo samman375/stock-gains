@@ -31,7 +31,7 @@ def checkIfTickerExists(conn, ticker):
     try:
         with conn:
             with conn.cursor() as cur:
-                cur.execute(q.currentPortfolioTickerQuery(ticker))
+                cur.execute(q.currentPortfolioTickerQuery(), (ticker,))
 
                 return True if cur.fetchone() else False
 
@@ -85,7 +85,7 @@ def insertNewInvestmentHistory(conn, ticker, price, volume, brokerage, date, sta
     - status: BUY or SELL status
     """
     cur = conn.cursor()
-    cur.execute(q.investmentHistoryInsert(ticker, price, volume, brokerage, date, status))
+    cur.execute(q.investmentHistoryInsert(), (ticker, price, volume, brokerage, date, status,))
     cur.close()
 
 def addToPortfolio(conn, ticker, price, volume, brokerage):
@@ -108,10 +108,10 @@ def addToPortfolio(conn, ticker, price, volume, brokerage):
     cur = conn.cursor()
     if isExistingTicker:
         # Update existing record
-        cur.execute(q.currentPortfolioBuyUpdate(cost, brokerage, volume, ticker))
+        cur.execute(q.currentPortfolioBuyUpdate(), (cost, brokerage, volume, ticker,))
     else:
         # Insert new record
-        cur.execute(q.currentPortfolioInsert(ticker, cost, brokerage, volume))
+        cur.execute(q.currentPortfolioInsert(), (ticker, cost, brokerage, volume,))
     cur.close()
 
 def reduceFromPortfolio(conn, ticker, price, volume, brokerage):
@@ -133,10 +133,10 @@ def reduceFromPortfolio(conn, ticker, price, volume, brokerage):
     profit = price * volume - brokerage
     cur = conn.cursor()
     if isExistingTicker:
-        cur.execute(q.currentPortfolioSellUpdate(profit, brokerage, volume, ticker))
+        cur.execute(q.currentPortfolioSellUpdate(), (profit, brokerage, volume, ticker,))
 
         # Check if the volume is 0 or less and delete the row if true
-        cur.execute(q.currentPortfolioDeleteIfZero(ticker))
+        cur.execute(q.currentPortfolioDeleteIfZero(), (ticker,))
     else:
         raise Exception(f"Ticker {ticker} does not exist in portfolio. Nothing to sell")
     cur.close()
@@ -154,6 +154,6 @@ def recordDividend(conn, ticker, value, date):
     try:
         with conn:
             with conn.cursor() as cur:
-                cur.execute(q.dividendsInsert(ticker, date, value))
+                cur.execute(q.dividendsInsert(), (ticker, date, value,))
     except psycopg2.Error as e:
         print(f"Database error: {e}")

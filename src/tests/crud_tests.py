@@ -12,6 +12,8 @@ from db.crud import (
 )
 import db.queries as q
 
+# TODO: Fix these. Queries were modified to not take params
+
 class TestCrudFunctions(unittest.TestCase):
 
     @patch('db.crud.psycopg2.connect')

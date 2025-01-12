@@ -1,14 +1,16 @@
 import os
 import json
-import datetime
 import subprocess
-from config import DB_CONFIG
+from datetime import datetime
 
-BACKUP_DIRECTORY_CONFIG = "backup_path.json"
-BACKUP_PREFIX = "stock-gains-db_"
-BACKUP_DATETIME_STRF = "%Y%m%d%-H%M%S"
-BACKUP_EXTENSION = '.backup'
-DEFAULT_BACKUPS_NUM = 3     #TODO: Make this configurable
+from db.config import (
+    DB_CONFIG,
+    BACKUP_DIRECTORY_CONFIG, 
+    BACKUP_PREFIX,
+    BACKUP_DATETIME_STRF,
+    BACKUP_EXTENSION,
+    DEFAULT_BACKUPS_NUM     # TODO: Make this configurable
+)
 
 def is_valid_backup_location(dir_path):
     """
@@ -20,15 +22,15 @@ def is_valid_backup_location(dir_path):
     if not os.path.exists(dir_path):
         print(f"Error: The directory '{dir_path}' does not exist. Please provide a valid directory.")
         return False
-    
+
     elif not os.path.isdir(dir_path):
         print(f"Error: The path '{dir_path}' is not a directory. Please provide a directory path.")
         return False
-    
+
     elif not os.access(dir_path, os.W_OK):
         print(f"Error: The directory '{dir_path}' is not writable. Please provide a writable directory.")
         return False
-    
+
     else:
         return True
 
@@ -41,6 +43,8 @@ def prompt_backup_location_input():
     """
     while True:
         backup_directory = input("Please provide the full path to the backup directory: ")
+
+        # TODO: Add default backup location
 
         if not is_valid_backup_location(backup_directory):
             continue
@@ -89,9 +93,9 @@ def get_backup_location():
 
 def generate_backup_name():
     """
-    Generates a backup file name in format: stock-gains-db_YYYYMMDD-HHMMSS.backup
+    Generates a backup file name in format: stock-gains-db_YYYYMMDDHHMMSS.backup
     """
-    current_datetime = datetime.datetime.now().strftime(BACKUP_DATETIME_STRF)
+    current_datetime = datetime.now().strftime(BACKUP_DATETIME_STRF)
 
     return f"{BACKUP_PREFIX}{current_datetime}{BACKUP_EXTENSION}"
 
@@ -172,12 +176,12 @@ def backup_database():
         "pg_dump", 
         "-h", DB_CONFIG["host"], 
         "-U", DB_CONFIG["user"], 
-        "-d", DB_CONFIG["target_database"], 
         "-F", "c", 
         "-b", 
-        "-v", 
-        "-f", backup_file_path
+        "-f", backup_file_path,
+        DB_CONFIG["target_db"]
     ]
+    print(command)
     subprocess.run(command, check=True)
     print(f"Backed up database in: {backup_file_path}")
     remove_oldest_backup()
@@ -194,7 +198,7 @@ def restore_database():
             "pg_restore", 
             "-h", DB_CONFIG["host"], 
             "-U", DB_CONFIG["user"], 
-            "-d", DB_CONFIG["target_database"], 
+            "-d", DB_CONFIG["target_db"], 
             "-v", 
             backup_file_path
         ]

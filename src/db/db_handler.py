@@ -1,5 +1,8 @@
+import sys
 import psycopg2
-from config import DB_CONFIG, TABLE_SCHEMA_FILE
+from psycopg2 import OperationalError
+
+from db.config import DB_CONFIG, TABLE_SCHEMA_FILE
 
 def get_connection(default_db=False):
     """
@@ -8,13 +11,18 @@ def get_connection(default_db=False):
     params:
     - default_db: Returns default db connection if set to true.
     """
-    return psycopg2.connect(
-        host=DB_CONFIG["host"],
-        port=DB_CONFIG["port"],
-        database=DB_CONFIG["default_database"] if default_db else DB_CONFIG["target_database"],
-        user=DB_CONFIG["user"],
-        password=DB_CONFIG["password"]
-    )
+    try:
+        return psycopg2.connect(
+            host=DB_CONFIG["host"],
+            port=DB_CONFIG["port"],
+            database=DB_CONFIG["default_db"] if default_db else DB_CONFIG["target_db"],
+            user=DB_CONFIG["user"],
+            password=DB_CONFIG["password"]
+        )
+    except OperationalError as e:
+        print("Error: Could not connect to the PostgreSQL server. Ensure postgresql is installed and running.")
+        print(f"Details: {e}")
+        sys.exit(1)
 
 def target_database_exists(default_conn):
     """
@@ -25,9 +33,9 @@ def target_database_exists(default_conn):
     """
     print("Checking if database exists...")
     with default_conn.cursor() as cur:
-        cur.execute(f"SELECT 1 FROM pg_database WHERE datname = {DB_CONFIG["target_database"]}")
-    
-    exists = cur.fetchone() is not None
+        cur.execute(f"SELECT 1 FROM pg_database WHERE datname = '{DB_CONFIG['target_db']}'")
+        exists = cur.fetchone() is not None
+
     print("Database exists." if exists else "Database does not exist.")
     return exists
 
@@ -39,7 +47,8 @@ def create_database(default_conn):
     - default_conn: default database connection
     """
     print("Creating database...")
-    db_name = DB_CONFIG["target_database"]
+    db_name = DB_CONFIG["target_db"]
+
     with default_conn.cursor() as cur:
         cur.execute(f"CREATE DATABASE {db_name}")
         print(f"Database '{db_name}' created.")
@@ -61,6 +70,7 @@ def setup_tables(conn):
                 print("Successfully created tables.")
     except Exception as e:
         print(f"Error setting up tables: {e}")
+        sys.exit(1)
 
 def database_setup():
     """
@@ -71,12 +81,21 @@ def database_setup():
     - conn: database connection.
     """
     default_conn = get_connection(default_db=True)
+
+    if not default_conn:
+        return None
+
+    # Disable transaction block since db cant be created in one
+    default_conn.autocommit = True
+
     if not target_database_exists(default_conn):
         create_database(default_conn)
+
     default_conn.close()
 
     conn = get_connection()
 
-    setup_tables(conn)
+    if conn:
+        setup_tables(conn)
 
     return conn

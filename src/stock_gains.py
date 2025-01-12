@@ -18,11 +18,14 @@ def _(event):
 
 def main():
     conn = database_setup()
+    if not conn:
+        return
+
     # TODO: Prompt for if user wants to restore from backup
     print("\nWelcome to stock-gains: Command-line portfolio information tool\n")
     while True:
         try:
-            user_input = prompt("Enter command: ", complete_while_typing=True, complete_in_thread=True, completer=COMMANDS, key_bindings=kb)
+            user_input = prompt("Enter command: ", complete_while_typing=True, complete_in_thread=True, completer=COMMANDS)
 
             # TODO: Add keybindings to all commands if works
             if user_input == "quit":

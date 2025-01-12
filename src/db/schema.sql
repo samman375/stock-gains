@@ -35,7 +35,30 @@ CREATE TABLE IF NOT EXISTS current_portfolio (
 );
 
 -- Add indexes to improve query performance
-CREATE INDEX idx_dividends_date ON dividends (date);
-CREATE INDEX idx_investment_history_date ON investment_history (date);
-CREATE INDEX idx_target_balance_percentage ON target_balance (percentage);
-CREATE INDEX idx_current_portfolio_cost ON current_portfolio (cost);
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_class WHERE relname = 'idx_dividends_date') THEN
+        CREATE INDEX idx_dividends_date ON dividends (date);
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_class WHERE relname = 'idx_investment_history_date') THEN
+        CREATE INDEX idx_investment_history_date ON investment_history (date);
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_class WHERE relname = 'idx_target_balance_percentage') THEN
+        CREATE INDEX idx_target_balance_percentage ON target_balance (percentage);
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_class WHERE relname = 'idx_current_portfolio_cost') THEN
+        CREATE INDEX idx_current_portfolio_cost ON current_portfolio (cost);
+    END IF;
+END $$;
