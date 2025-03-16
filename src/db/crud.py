@@ -12,7 +12,7 @@ def getDistinctTickers(conn):
                 cur.execute(q.distinctTickersQuery())
                 result = cur.fetchall()
 
-                tickers = [row for row in result]
+                tickers = [row[0] for row in result]
 
                 return tickers
 
@@ -20,20 +20,17 @@ def getDistinctTickers(conn):
         print(f"Database error: {e}")
         return []
 
-def checkIfTickerExists(conn, ticker):
+def checkIfTickerExists(cur, ticker):
     """
     Checks if a ticker exists in the current_portfolio table.
 
     params:
-    - conn: db connection
+    - conn: db connection cursor
     - ticker: ticker to check
     """
     try:
-        with conn:
-            with conn.cursor() as cur:
-                cur.execute(q.currentPortfolioTickerQuery(), (ticker,))
-
-                return True if cur.fetchone() else False
+        cur.execute(q.currentPortfolioTickerQuery(), (ticker,))
+        return True if cur.fetchone() else False
 
     except psycopg2.Error as e:
         print(f"Database error: {e}")
@@ -53,7 +50,7 @@ def getCurrentPortfolioTickerData(conn, ticker):
     try:
         with conn:
             with conn.cursor() as cur:
-                cur.execute(q.currentPortfolioTickerQuery(ticker))
+                cur.execute(q.currentPortfolioTickerQuery(), (ticker,))
                 result = cur.fetchone()
                 tickerData = {
                     'ticker': result[0],
@@ -69,14 +66,14 @@ def getCurrentPortfolioTickerData(conn, ticker):
         print(f"Database error: {e}")
         return []
 
-def insertNewInvestmentHistory(conn, ticker, price, volume, brokerage, date, status):
+def insertNewInvestmentHistory(cur, ticker, price, volume, brokerage, date, status):
     """
     Insert new investment history into investment_history table
 
     Note: Function does not contain a try/with block as it's meant to be use in an atomic function with a separate db call.
 
     Params:
-    - conn: db connection
+    - cur: db connection cursor
     - ticker: ticker of the new investment
     - volume: volume of the new investment
     - price: price of the new investment
@@ -84,11 +81,10 @@ def insertNewInvestmentHistory(conn, ticker, price, volume, brokerage, date, sta
     - date: date of the new investment
     - status: BUY or SELL status
     """
-    cur = conn.cursor()
     cur.execute(q.investmentHistoryInsert(), (ticker, price, volume, brokerage, date, status,))
-    cur.close()
+    # cur.close()
 
-def addToPortfolio(conn, ticker, price, volume, brokerage):
+def addToPortfolio(cur, ticker, price, volume, brokerage):
     """
     Updates the `current_portfolio` table with a new investment. 
     If the ticker already exists, it updates the values. 
@@ -103,16 +99,16 @@ def addToPortfolio(conn, ticker, price, volume, brokerage):
     - volume (int): The volume of the investment.
     - brokerage (float): The brokerage fees.
     """
-    isExistingTicker = checkIfTickerExists(conn, ticker)
+    isExistingTicker = checkIfTickerExists(cur, ticker)
     cost = price * volume + brokerage
-    cur = conn.cursor()
+    # cur = conn.cursor()
     if isExistingTicker:
         # Update existing record
         cur.execute(q.currentPortfolioBuyUpdate(), (cost, brokerage, volume, ticker,))
     else:
         # Insert new record
         cur.execute(q.currentPortfolioInsert(), (ticker, cost, brokerage, volume,))
-    cur.close()
+    # cur.close()
 
 def reduceFromPortfolio(conn, ticker, price, volume, brokerage):
     """

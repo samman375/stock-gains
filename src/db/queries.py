@@ -1,6 +1,6 @@
 def distinctTickersQuery():
     return """
-            SELECT DISTINCT ticker 
+            SELECT DISTINCT ticker, cost 
             FROM current_portfolio
             ORDER BY cost DESC;
         """

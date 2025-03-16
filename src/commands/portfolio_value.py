@@ -1,6 +1,8 @@
 import pandas as pd
+from tabulate import tabulate
 
-from requests.yfinance_fetcher import getYfinanceTickerData
+from db.crud import getDistinctTickers
+from fetchers.yfinance_fetcher import getYfinanceTickerData
 from utils.data_processing import tickerValueExtractor
 
 def portfolioValue(conn):
@@ -10,8 +12,9 @@ def portfolioValue(conn):
     Params:
     - conn: db connection
     """
+    tickers = getDistinctTickers(conn)
 
-    data = getYfinanceTickerData()
+    data = getYfinanceTickerData(conn, tickers)
 
     outputDfRows = []
 
@@ -35,12 +38,16 @@ def portfolioValue(conn):
 
     totalNetGain += totalDividend
 
-    percGain = (totalValue / (totalCost - totalBrokerage) - 1) * 100
-    netPercGain = (totalNetGain / totalCost) * 100
+    if totalCost == 0 or totalCost == 0 and totalBrokerage == 0:
+        percGain = "N/A"
+        netPercGain = "N/A"
+    else:
+        percGain = round((totalValue / (totalCost - totalBrokerage) - 1) * 100, 2)
+        netPercGain = round((totalNetGain / totalCost) * 100, 2)
 
     totalRow = [
-        '', 
         'Total', 
+        '', 
         '', 
         totalCost, 
         totalValue, 
@@ -54,4 +61,6 @@ def portfolioValue(conn):
 
     outputColumns = ['Ticker', 'Full Name', 'Price', 'Cost', 'Value', '%Gain', '%NetGain', 'Gain', 'Net Gain', 'Dividends']
     df = pd.DataFrame(outputDfRows, columns=outputColumns)
-    print(f'\n{df.to_string(index=False)}\n')
+    # print(f'\n{df.to_string(index=False)}\n')
+    table = tabulate(df, headers='keys', tablefmt='fancy_grid', showindex=False)
+    print(table)

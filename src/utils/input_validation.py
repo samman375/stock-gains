@@ -2,7 +2,7 @@ import re
 from prompt_toolkit.validation import Validator, ValidationError
 
 from db.crud import checkIfTickerExists
-from requests.yfinance_fetcher import isValidYfinanceTicker
+from fetchers.yfinance_fetcher import isValidYfinanceTicker
 
 def isNonNegative(value):
     return value >= 0
@@ -32,7 +32,7 @@ class NonNegativeIntValidator(Validator):
         if not document.text.isdigit():
             raise ValidationError(message='This input contains non-numeric characters', cursor_position=len(document.text))
         value = int(document.text)
-        if isNonNegative(value):
+        if not isNonNegative(value):
             raise ValidationError(message='The value cannot be less than 0', cursor_position=len(document.text))
 
 class DateValidator(Validator):

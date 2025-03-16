@@ -16,12 +16,12 @@ def tickerValueExtractor(conn, data:object):
     db_data = getCurrentPortfolioTickerData(conn, ticker)
     volume = db_data['volume']
     cost = db_data['cost']
-    totalBrokerage = db_data['totalBrokerage']
+    totalBrokerage = db_data['total_brokerage']
     dividend = db_data['dividends']
 
     value = price * volume
-    percGain = (value / (cost - totalBrokerage) - 1) * 100
-    netPercGain = ((value + dividend) / cost - 1) * 100
+    percGain = round((value / (cost - totalBrokerage) - 1) * 100, 2)
+    netPercGain = round(((value + dividend) / cost - 1) * 100, 2)
     gain = value - (cost - totalBrokerage)
     netGain = value + dividend - cost
 

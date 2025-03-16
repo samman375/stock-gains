@@ -11,11 +11,12 @@ def isValidYfinanceTicker(ticker:str):
     """
     try:
         yf.Ticker(ticker)
+        print("checking ticker: ", ticker)
         return True
     except:
         return False
 
-def getYfinanceTickerData(conn, tickers:str):
+def getYfinanceTickerData(conn, tickers):
     """
     Get data for tickers from Yahoo Finance API
     
