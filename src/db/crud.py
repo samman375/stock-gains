@@ -82,7 +82,6 @@ def insertNewInvestmentHistory(cur, ticker, price, volume, brokerage, date, stat
     - status: BUY or SELL status
     """
     cur.execute(q.investmentHistoryInsert(), (ticker, price, volume, brokerage, date, status,))
-    # cur.close()
 
 def addToPortfolio(cur, ticker, price, volume, brokerage):
     """
@@ -110,7 +109,7 @@ def addToPortfolio(cur, ticker, price, volume, brokerage):
         cur.execute(q.currentPortfolioInsert(), (ticker, cost, brokerage, volume,))
     # cur.close()
 
-def reduceFromPortfolio(conn, ticker, price, volume, brokerage):
+def reduceFromPortfolio(cur, ticker, price, volume, brokerage):
     """
     Updates the `current_portfolio` table with a sale action. 
     If the ticker already exists, it updates the values.
@@ -125,9 +124,8 @@ def reduceFromPortfolio(conn, ticker, price, volume, brokerage):
     - volume (int): The volume of the sale.
     - brokerage (float): The brokerage fees.
     """
-    isExistingTicker = checkIfTickerExists(conn, ticker)
+    isExistingTicker = checkIfTickerExists(cur, ticker)
     profit = price * volume - brokerage
-    cur = conn.cursor()
     if isExistingTicker:
         cur.execute(q.currentPortfolioSellUpdate(), (profit, brokerage, volume, ticker,))
 
@@ -135,9 +133,8 @@ def reduceFromPortfolio(conn, ticker, price, volume, brokerage):
         cur.execute(q.currentPortfolioDeleteIfZero(), (ticker,))
     else:
         raise Exception(f"Ticker {ticker} does not exist in portfolio. Nothing to sell")
-    cur.close()
 
-def recordDividend(conn, ticker, value, date):
+def recordDividend(cur, ticker, value, date):
     """
     Records a dividend payment in the `dividends` table.
 
@@ -147,9 +144,4 @@ def recordDividend(conn, ticker, value, date):
     - value (float): The total value of the dividend.
     - date (str): The date of the dividend payment.
     """
-    try:
-        with conn:
-            with conn.cursor() as cur:
-                cur.execute(q.dividendsInsert(), (ticker, date, value,))
-    except psycopg2.Error as e:
-        print(f"Database error: {e}")
+    cur.execute(q.dividendsInsert(), (ticker, date, value,))

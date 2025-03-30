@@ -30,7 +30,6 @@ CREATE TABLE IF NOT EXISTS current_portfolio (
     cost DOUBLE PRECISION NOT NULL,
     volume INT NOT NULL,
     total_brokerage DOUBLE PRECISION NOT NULL,
-    dividends DOUBLE PRECISION NOT NULL DEFAULT 0,
     PRIMARY KEY (ticker)
 );
 

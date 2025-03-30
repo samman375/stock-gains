@@ -1,15 +1,22 @@
 def distinctTickersQuery():
     return """
-            SELECT DISTINCT ticker, cost 
-            FROM current_portfolio
-            ORDER BY cost DESC;
-        """
+        SELECT DISTINCT ticker, cost 
+        FROM current_portfolio
+        ORDER BY cost DESC;
+    """
 
 def currentPortfolioTickerQuery():
     return """
-        SELECT ticker, cost, volume, total_brokerage, dividends 
-        FROM current_portfolio 
-        WHERE ticker = %s;
+        SELECT 
+            c.ticker, 
+            c.cost, 
+            c.volume, 
+            c.total_brokerage, 
+            COALESCE(SUM(d.distribution_value), 0)
+        FROM current_portfolio c 
+        LEFT JOIN dividends d ON c.ticker = d.ticker
+        WHERE c.ticker = %s
+        GROUP BY c.ticker, c.cost, c.volume, c.total_brokerage;
     """
 
 def investmentHistoryInsert():

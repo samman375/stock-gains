@@ -14,12 +14,13 @@ def buyInvestment(conn, key_bindings):
         volume = int(prompt('Volume: ', validator=v.NonNegativeIntValidator(), key_bindings=key_bindings))
         brokerage = float(prompt('Brokerage: $', validator=v.NonNegativeFloatValidator(), key_bindings=key_bindings))
         date = prompt('Date (YYYY-MM-DD): ', validator=v.DateValidator(), key_bindings=key_bindings)
+        
         cost = volume * price + brokerage
 
         try:
             with conn.cursor() as cur:
-                insertNewInvestmentHistory(conn, ticker, price, volume, brokerage, date, 'BUY')
-                addToPortfolio(conn, ticker, price, volume, brokerage)
+                insertNewInvestmentHistory(cur, ticker, price, volume, brokerage, date, 'BUY')
+                addToPortfolio(cur, ticker, price, volume, brokerage)
                 conn.commit()
             print(f"Purchased {volume} of {ticker} at ${price} per share on {date} with a ${brokerage} brokerage fee. Net trade value: ${cost}\n")
         except Exception as e:

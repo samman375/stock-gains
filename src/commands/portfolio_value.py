@@ -5,6 +5,9 @@ from db.crud import getDistinctTickers
 from fetchers.yfinance_fetcher import getYfinanceTickerData
 from utils.data_processing import tickerValueExtractor
 
+OUTPUT_COLUMNS = ['Ticker', 'Full Name', 'Price', 'Cost', 'Value', '%Gain', '%NetGain', 'Gain', 'Net Gain', 'Dividends']
+MAX_COL_WIDTHS = [8, 23, 8, 9, 9, 7, 7, 9, 9, 9]
+
 def portfolioValue(conn):
     """
     Print portfolio value table to command line sorted by cost
@@ -59,8 +62,6 @@ def portfolioValue(conn):
     ]
     outputDfRows.append(totalRow)
 
-    outputColumns = ['Ticker', 'Full Name', 'Price', 'Cost', 'Value', '%Gain', '%NetGain', 'Gain', 'Net Gain', 'Dividends']
-    df = pd.DataFrame(outputDfRows, columns=outputColumns)
-    # print(f'\n{df.to_string(index=False)}\n')
-    table = tabulate(df, headers='keys', tablefmt='fancy_grid', showindex=False)
+    df = pd.DataFrame(outputDfRows, columns=OUTPUT_COLUMNS)
+    table = tabulate(df, headers='keys', tablefmt='rounded_grid', showindex=False, maxcolwidths=MAX_COL_WIDTHS)
     print(table)

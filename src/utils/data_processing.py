@@ -25,7 +25,4 @@ def tickerValueExtractor(conn, data:object):
     gain = value - (cost - totalBrokerage)
     netGain = value + dividend - cost
 
-    # print(f"{ticker.ljust(8, ' ')}  {fullName.ljust(60, ' ')}  {str('%.2f' % price).rjust(7, ' ')}  {str('%.2f' % cost).rjust(8, ' ')}  {str('%.2f' % value).rjust(8, ' ')}  {(str('%.2f' % percGain) + '%').rjust(7, ' ')}  {(str('%.2f' % netPercGain) + '%').rjust(7, ' ')}   {str('%.2f' % gain).rjust(8, ' ')}  {str('%.2f' % netGain).rjust(8, ' ')}  {str('%.2f' % dividend).rjust(7, ' ')}")
-
-    # return {'ticker' 'cost': cost, 'value': value, 'dividend': dividend, 'gain': gain, 'net_gain': netGain, 'brokerage': totalBrokerage}
     return [ticker, fullName, price, cost, value, percGain, netPercGain, gain, netGain, dividend, totalBrokerage]

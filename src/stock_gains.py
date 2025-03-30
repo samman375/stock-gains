@@ -37,7 +37,7 @@ def main():
             elif user_input == "sell":
                 sellInvestment(conn, kb)
             elif user_input == "dividend":
-                dividend(conn)
+                dividend(conn, kb)
             elif user_input == "settings":
                 break
 
