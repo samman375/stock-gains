@@ -56,6 +56,16 @@ def currentPortfolioDeleteIfZero():
 ###################
 # dividends table #
 ###################
+def dividendsQuery():
+    return """
+        SELECT
+            ticker,
+            date,
+            distribution_value
+        FROM dividends
+        ORDER BY date ASC;
+    """
+
 def dividendsInsert():
     return """
         INSERT INTO dividends (ticker, date, distribution_value)
@@ -68,7 +78,13 @@ def dividendsInsert():
 ############################
 def investmentHistoryQuery():
     return """
-        SELECT *
+        SELECT
+            ticker,
+            price,
+            volume,
+            brokerage,
+            date,
+            status
         FROM investment_history
         ORDER BY date ASC;
     """

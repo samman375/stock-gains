@@ -161,3 +161,19 @@ def getInvestmentHistory(conn):
     except psycopg2.Error as e:
         print(f"Database error: {e}")
         return []
+
+def getDividendHistory(conn):
+    """
+    Returns all rows from the `dividends` table.
+
+    Params:
+    - conn: db connection
+    """
+    try:
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(q.dividendsQuery())
+                return cur.fetchall()
+    except psycopg2.Error as e:
+        print(f"Database error: {e}")
+        return []

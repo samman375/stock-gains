@@ -4,9 +4,10 @@ from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
 
 import utils.input_validation as v
-from db.crud import getInvestmentHistory
+from db.crud import getInvestmentHistory, getDividendHistory
 
-OUTPUT_COLUMNS = ['Date', 'Status', 'Ticker', 'Value ($)', 'Price ($)', 'Volume', 'Brokerage ($)']
+TRADES_OUTPUT_COLUMNS = ['Date', 'Status', 'Ticker', 'Value ($)', 'Price ($)', 'Volume', 'Brokerage ($)']
+DIVIDENDS_OUTPUT_COLUMNS = ['Date', 'Ticker', 'Distribution ($)']
 
 def investmentHistory(conn, key_bindings):
     """
@@ -26,16 +27,26 @@ def investmentHistory(conn, key_bindings):
             volume = trade[2]
             value = price * volume
             brokerage = trade[3]
+            
             tradesDfRows.append([date, status, ticker, value, price, volume, brokerage])
 
-        df = pd.DataFrame(tradesDfRows, columns=OUTPUT_COLUMNS)
+        df = pd.DataFrame(tradesDfRows, columns=TRADES_OUTPUT_COLUMNS)
         table = tabulate(df, headers='keys', tablefmt='rounded_grid', showindex=False)
         print(table)
 
-    # elif history_type == "dividends":
-    #     dividends = getInvestmentHistory(conn, 'DIVIDEND')
-    #     print("Dividend history:")
-    #     for dividend in dividends:
-    #         print(dividend)
+    elif historyType == "dividends":
+        dividends = getDividendHistory(conn)
+        dividendsDfRows = []
+        for dividend in dividends:
+            date = dividend[1]
+            ticker = dividend[0]
+            distribution = dividend[2]
+
+            dividendsDfRows.append([date, ticker, distribution])
+
+        df = pd.DataFrame(dividendsDfRows, columns=DIVIDENDS_OUTPUT_COLUMNS)
+        table = tabulate(df, headers='keys', tablefmt='rounded_grid', showindex=False)
+        print(table)
+
     else:
         print("Invalid history type. Please try again.")
