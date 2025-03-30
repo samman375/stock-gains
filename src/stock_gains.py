@@ -3,6 +3,7 @@ from prompt_toolkit.key_binding import KeyBindings
 
 from commands.buy import buyInvestment
 from commands.dividend import dividend
+from commands.investment_history import investmentHistory
 from commands.portfolio_value import portfolioValue
 from commands.sell import sellInvestment
 from db.backup_handler import backup_database, restore_database
@@ -38,8 +39,12 @@ def main():
                 sellInvestment(conn, kb)
             elif user_input == "dividend":
                 dividend(conn, kb)
+            elif user_input == "investment-history":
+                investmentHistory(conn, kb)
             elif user_input == "settings":
                 break
+            else:
+                print("Invalid command. Please try again.")
 
         except KeyboardInterrupt:
             print("Exiting...")

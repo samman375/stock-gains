@@ -145,3 +145,19 @@ def recordDividend(cur, ticker, value, date):
     - date (str): The date of the dividend payment.
     """
     cur.execute(q.dividendsInsert(), (ticker, date, value,))
+
+def getInvestmentHistory(conn):
+    """
+    Returns all rows from the `investment_history` table.
+
+    Params:
+    - conn: db connection
+    """
+    try:
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(q.investmentHistoryQuery())
+                return cur.fetchall()
+    except psycopg2.Error as e:
+        print(f"Database error: {e}")
+        return []

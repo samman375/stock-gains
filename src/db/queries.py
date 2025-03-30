@@ -1,3 +1,6 @@
+###################################
+# current_portfolio table queries #
+###################################
 def distinctTickersQuery():
     return """
         SELECT DISTINCT ticker, cost 
@@ -17,12 +20,6 @@ def currentPortfolioTickerQuery():
         LEFT JOIN dividends d ON c.ticker = d.ticker
         WHERE c.ticker = %s
         GROUP BY c.ticker, c.cost, c.volume, c.total_brokerage;
-    """
-
-def investmentHistoryInsert():
-    return """
-        INSERT INTO investment_history (ticker, price, volume, brokerage, date, status)
-        VALUES (%s, %s, %s, %s, %s, %s);
     """
 
 def currentPortfolioBuyUpdate():
@@ -55,8 +52,29 @@ def currentPortfolioDeleteIfZero():
         WHERE ticker = %s AND volume <= 0;
     """
 
+
+###################
+# dividends table #
+###################
 def dividendsInsert():
     return """
         INSERT INTO dividends (ticker, date, distribution_value)
         VALUES (%s, %s, %s);
+    """
+
+
+############################
+# investment_history table #
+############################
+def investmentHistoryQuery():
+    return """
+        SELECT *
+        FROM investment_history
+        ORDER BY date ASC;
+    """
+
+def investmentHistoryInsert():
+    return """
+        INSERT INTO investment_history (ticker, price, volume, brokerage, date, status)
+        VALUES (%s, %s, %s, %s, %s, %s);
     """
