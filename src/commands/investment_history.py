@@ -3,7 +3,6 @@ from tabulate import tabulate
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
 
-import utils.input_validation as v
 from db.crud import getInvestmentHistory, getDividendHistory
 
 TRADES_OUTPUT_COLUMNS = ['Date', 'Status', 'Ticker', 'Value ($)', 'Price ($)', 'Volume', 'Brokerage ($)']

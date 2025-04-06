@@ -12,7 +12,7 @@ COMMANDS = NestedCompleter.from_nested_dict({
     "investment-history": None,
     "portfolio-balance": None,      # Add market percentage
     "rebalance-suggestions": None,
-    # "settings": None,             # Add backup location, restore backup
-    # "help": None                  # Auto-generated?
+    "settings": None,             # Add backup location, restore backup
+    "help": None,                  # Auto-generated?
     "quit": None
 })

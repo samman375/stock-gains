@@ -3,6 +3,7 @@ from prompt_toolkit.key_binding import KeyBindings
 
 from commands.buy import buyInvestment
 from commands.dividend import dividend
+from commands.historical_performance import historicalPerformance
 from commands.investment_history import investmentHistory
 from commands.portfolio_value import portfolioValue
 from commands.sell import sellInvestment
@@ -41,8 +42,18 @@ def main():
                 dividend(conn, kb)
             elif user_input == "investment-history":
                 investmentHistory(conn, kb)
+            elif user_input == "historical-performance":
+                historicalPerformance(conn)
+            elif user_input == "rebalance-suggestions":
+                print("Rebalance suggestions feature is not implemented yet.")
+            elif user_input == "portfolio-balance":
+                print("Portfolio balance feature is not implemented yet.")
+            elif user_input == "ammend":
+                print("Ammend feature is not implemented yet.")
+            elif user_input == "help":
+                print("Help feature is not implemented yet.")
             elif user_input == "settings":
-                break
+                print("Settings feature is not implemented yet.")
             else:
                 print("Invalid command. Please try again.")
 
