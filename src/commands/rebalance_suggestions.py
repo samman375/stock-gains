@@ -104,5 +104,5 @@ def rebalanceSuggestions(conn, key_bindings):
     buckets = {}
     allTickers = []
     for bucket in targetBalance:
-        buckets[bucket] = {} # TODO: Key can't be a list
+        buckets[bucket] = {} # TODO: Key can't be a list, recreate target_balance table
         allTickers.extend(bucket)
