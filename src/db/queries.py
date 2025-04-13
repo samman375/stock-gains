@@ -94,3 +94,27 @@ def investmentHistoryInsert():
         INSERT INTO investment_history (ticker, price, volume, brokerage, date, status)
         VALUES (%s, %s, %s, %s, %s, %s);
     """
+
+########################
+# target_balance table #
+########################
+
+def targetBalanceQuery():
+    return """
+        SELECT
+            bucket_tickers,
+            percentage,
+        FROM target_balance
+        ORDER BY percentage DESC;
+    """
+
+def truncateTargetBalance():
+    return """
+        TRUNCATE target_balance;
+    """
+
+def insertTargetBalance():
+    return """
+        INSERT INTO target_balance (bucket_tickers, percentage)
+        VALUES (%s, %s);
+    """

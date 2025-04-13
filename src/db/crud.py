@@ -177,3 +177,46 @@ def getDividendHistory(conn):
     except psycopg2.Error as e:
         print(f"Database error: {e}")
         return []
+
+def getTargetBalance(conn):
+    """
+    Returns the target balance for the portfolio from the `target_balance` table.
+
+    Params:
+    - conn: db connection
+    """
+    try:
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(q.targetBalanceQuery())
+                return cur.fetchall()
+    except psycopg2.Error as e:
+        print(f"Database error: {e}")
+        return []
+
+def clearTargetBalance(conn):
+    """
+    Clears the target balance for the portfolio from the `target_balance` table.
+
+    Params:
+    - conn: db connection
+    """
+    try:
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(q.truncateTargetBalance())
+                conn.commit()
+    except psycopg2.Error as e:
+        print(f"Database error: {e}")
+        return []
+
+def insertTargetBalance(cur, ticker, percentage):
+    """
+    Inserts a target balance into the `target_balance` table.
+
+    Params:
+    - conn: db connection
+    - ticker (str): The ticker symbol.
+    - percentage (float): The target percentage for the ticker.
+    """
+    cur.execute(q.targetBalanceInsert(), (ticker, percentage,))

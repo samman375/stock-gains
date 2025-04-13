@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS investment_history (
 
 -- Schema for Target Portfolio Table
 CREATE TABLE IF NOT EXISTS target_balance (
-    bucket_tickers VARCHAR(255) NOT NULL,
+    bucket_tickers TEXT[] NOT NULL,
     percentage DOUBLE PRECISION NOT NULL CHECK (percentage >= 0 AND percentage <= 100),
     PRIMARY KEY (bucket_tickers)
 );

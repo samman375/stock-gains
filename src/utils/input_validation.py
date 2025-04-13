@@ -4,6 +4,9 @@ from prompt_toolkit.validation import Validator, ValidationError
 from db.crud import checkIfTickerExists
 from fetchers.yfinance_fetcher import isValidYfinanceTicker
 
+YES_TEXT = ['y', 'yes']
+NO_TEXT = ['n', 'no']
+
 def isNonNegative(value):
     return value >= 0
 
@@ -17,6 +20,10 @@ def isValidExistingTicker(conn, ticker):
 def isValidTicker(conn, ticker):
     return isValidExistingTicker(conn, ticker) or isValidYfinanceTicker(ticker)
 
+class BooleanValidator(Validator):
+    def validate(self, document):
+        if not document.text.lower().strip() in ['y', 'yes', 'n', 'no']:
+            raise ValidationError(message='Please enter "Y" or "N".', cursor_position=len(document.text))
 
 class NonNegativeFloatValidator(Validator):
     def validate(self, document):
