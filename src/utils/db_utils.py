@@ -1,5 +1,20 @@
 import re
 
+def postgresArrayToList(array):
+    """
+    Converts a PostgreSQL array to a string representation.
+
+    params:
+    - array: PostgreSQL array
+
+    Returns:
+    - string representation of the array
+    """
+    if not array:
+        return []
+
+    return array.strip("{}").split(",")
+
 def get_schema_table_names(schema_file):
     """
     Extracts all table names from schema.sql file

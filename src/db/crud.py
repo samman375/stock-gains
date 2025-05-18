@@ -219,4 +219,4 @@ def insertTargetBalance(cur, ticker, percentage):
     - ticker (str): The ticker symbol.
     - percentage (float): The target percentage for the ticker.
     """
-    cur.execute(q.targetBalanceInsert(), (ticker, percentage,))
+    cur.execute(q.insertTargetBalance(), (ticker, percentage,))

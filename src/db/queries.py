@@ -103,7 +103,7 @@ def targetBalanceQuery():
     return """
         SELECT
             bucket_tickers,
-            percentage,
+            percentage
         FROM target_balance
         ORDER BY percentage DESC;
     """
