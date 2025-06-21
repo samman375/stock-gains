@@ -1,3 +1,4 @@
+build/
 store/
 __pycache__/
 .DS_Store

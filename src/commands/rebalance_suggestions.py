@@ -122,7 +122,7 @@ def rebalanceSuggestions(conn, key_bindings):
 
     for bucket, perc in targetBalance:
         bucketInfo = {}
-        bucketInfo['tickers'] = bucket
+        bucketInfo['tickers'] = postgresArrayToList(bucket)
         bucketInfo['targetPerc'] = perc
 
         bucketValue = 0
@@ -134,14 +134,14 @@ def rebalanceSuggestions(conn, key_bindings):
         totalValue += bucketValue
         bucketName = '+'.join(bucketInfo['tickers'])
         buckets[bucketName] = bucketInfo
-    
+
     highestPercDiff = 0
     highestBucket = ""
     for bucket in buckets:
         currentPerc = round((buckets[bucket]['value'] / totalValue) * 100, 2)
         buckets[bucket]['currentPerc'] = currentPerc
         targetPercDiff = (currentPerc - buckets[bucket]['targetPerc']) * (100 / buckets[bucket]['targetPerc'])
-        if targetPercDiff > highestPercDiff:
+        if targetPercDiff >= highestPercDiff:
             highestPercDiff = targetPercDiff
             highestBucket = bucket
     

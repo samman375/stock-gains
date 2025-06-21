@@ -52,13 +52,22 @@ def getCurrentPortfolioTickerData(conn, ticker):
             with conn.cursor() as cur:
                 cur.execute(q.currentPortfolioTickerQuery(), (ticker,))
                 result = cur.fetchone()
-                tickerData = {
-                    'ticker': result[0],
-                    'cost': result[1],
-                    'volume': result[2],
-                    'total_brokerage': result[3],
-                    'dividends': result[4]
-                }
+                if not result:
+                    return {
+                        'ticker': ticker,
+                        'cost': 0.0,
+                        'volume': 0,
+                        'total_brokerage': 0.0,
+                        'dividends': 0.0
+                    }
+                else:
+                    tickerData = {
+                        'ticker': result[0],
+                        'cost': result[1],
+                        'volume': result[2],
+                        'total_brokerage': result[3],
+                        'dividends': result[4]
+                    }
 
                 return tickerData
 

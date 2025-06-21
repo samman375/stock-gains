@@ -10,10 +10,9 @@ def postgresArrayToList(array):
     Returns:
     - string representation of the array
     """
-    if not array:
+    if not array or array == '{}':
         return []
-
-    return array.strip("{}").split(",")
+    return [item.strip() for item in array.strip('{}').split(',') if item.strip()]
 
 def get_schema_table_names(schema_file):
     """
