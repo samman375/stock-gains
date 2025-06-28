@@ -1,7 +1,7 @@
 from prompt_toolkit import prompt
 
 import utils.input_validation as v
-from db.crud import insertNewInvestmentHistory, reduceFromPortfolio
+from db.crud import insertNewInvestmentHistory
 
 def sellInvestment(conn, key_bindings):
     """
@@ -18,7 +18,6 @@ def sellInvestment(conn, key_bindings):
         try:
             with conn.cursor() as cur:
                 insertNewInvestmentHistory(cur, ticker, price, volume, brokerage, date, 'SELL')
-                reduceFromPortfolio(cur, ticker, price, volume, brokerage)
                 conn.commit()
 
             print(f"Sold {volume} of {ticker} at ${price} per share on {date} with a ${brokerage} brokerage fee. Net trade value: ${profit}\n")

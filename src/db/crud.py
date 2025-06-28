@@ -29,23 +29,25 @@ def checkIfTickerExists(cur, ticker):
     - ticker: ticker to check
     """
     try:
-        cur.execute(q.currentPortfolioTickerQuery(), (ticker,))
-        return True if cur.fetchone() else False
+        cur.execute(q.tickerExistsQuery(), (ticker,))
+        result = cur.fetchone()
+        return result[0] if result is not None else False
 
     except psycopg2.Error as e:
         print(f"Database error: {e}")
+        return False
 
 def getCurrentPortfolioTickerData(conn, ticker):
     """
     Returns data from the current_portfolio table for a given ticker.
-    Data currently returned: ticker, cost, volume, total_brokerage, dividends
+    Data currently returned: ticker, calculated_cost, total_volume, total_brokerage, total_dividends, realized_profit
 
     Params:
     - conn: db connection
     - ticker: ticker to lookup
     Returns:
     - tickerData: dictionary of data for the ticker
-      eg. {'ticker': 'A200', 'cost': 500, ...}
+      eg. {'ticker': 'A200', 'calculated_cost': 500, ...}
     """
     try:
         with conn:
@@ -57,16 +59,20 @@ def getCurrentPortfolioTickerData(conn, ticker):
                         'ticker': ticker,
                         'cost': 0.0,
                         'volume': 0,
-                        'total_brokerage': 0.0,
-                        'dividends': 0.0
+                        'buy_brokerage': 0.0,
+                        'sell_brokerage': 0.0,
+                        'dividends': 0.0,
+                        'realized_profit': 0.0
                     }
                 else:
                     tickerData = {
                         'ticker': result[0],
-                        'cost': result[1],
-                        'volume': result[2],
-                        'total_brokerage': result[3],
-                        'dividends': result[4]
+                        'cost': float(result[1]) if result[1] is not None else None,
+                        'volume': int(result[2]),
+                        'buy_brokerage': float(result[3]),
+                        'sell_brokerage': float(result[4]),
+                        'dividends': float(result[5]),
+                        'realized_profit': float(result[6])
                     }
 
                 return tickerData
@@ -91,57 +97,7 @@ def insertNewInvestmentHistory(cur, ticker, price, volume, brokerage, date, stat
     - status: BUY or SELL status
     """
     cur.execute(q.investmentHistoryInsert(), (ticker, price, volume, brokerage, date, status,))
-
-def addToPortfolio(cur, ticker, price, volume, brokerage):
-    """
-    Updates the `current_portfolio` table with a new investment. 
-    If the ticker already exists, it updates the values. 
-    If the ticker does not exist, it inserts a new row.
-    
-    Note: Function does not contain a try/with block as it's meant to be use in an atomic function with a separate db call.
-
-    Params:
-    - conn: db connection
-    - ticker (str): The ticker symbol.
-    - price (float): The price of the investment.
-    - volume (int): The volume of the investment.
-    - brokerage (float): The brokerage fees.
-    """
-    isExistingTicker = checkIfTickerExists(cur, ticker)
-    cost = price * volume + brokerage
-    # cur = conn.cursor()
-    if isExistingTicker:
-        # Update existing record
-        cur.execute(q.currentPortfolioBuyUpdate(), (cost, brokerage, volume, ticker,))
-    else:
-        # Insert new record
-        cur.execute(q.currentPortfolioInsert(), (ticker, cost, brokerage, volume,))
-    # cur.close()
-
-def reduceFromPortfolio(cur, ticker, price, volume, brokerage):
-    """
-    Updates the `current_portfolio` table with a sale action. 
-    If the ticker already exists, it updates the values.
-    If the ticker value becomes non-positive, it deletes the row.
-    
-    Note: Function does not contain a try/with block as it's meant to be use in an atomic function with a separate db call.
-
-    Params:
-    - conn: db connection
-    - ticker (str): The ticker symbol.
-    - price (float): The price of the sale.
-    - volume (int): The volume of the sale.
-    - brokerage (float): The brokerage fees.
-    """
-    isExistingTicker = checkIfTickerExists(cur, ticker)
-    profit = price * volume - brokerage
-    if isExistingTicker:
-        cur.execute(q.currentPortfolioSellUpdate(), (profit, brokerage, volume, ticker,))
-
-        # Check if the volume is 0 or less and delete the row if true
-        cur.execute(q.currentPortfolioDeleteIfZero(), (ticker,))
-    else:
-        raise Exception(f"Ticker {ticker} does not exist in portfolio. Nothing to sell")
+    cur.execute(q.refreshCurrentPortfolio())
 
 def recordDividend(cur, ticker, value, date):
     """
@@ -154,6 +110,7 @@ def recordDividend(cur, ticker, value, date):
     - date (str): The date of the dividend payment.
     """
     cur.execute(q.dividendsInsert(), (ticker, date, value,))
+    cur.execute(q.refreshCurrentPortfolio())
 
 def getInvestmentHistory(conn):
     """

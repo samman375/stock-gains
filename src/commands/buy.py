@@ -1,7 +1,7 @@
 from prompt_toolkit import prompt
 
 import utils.input_validation as v
-from db.crud import insertNewInvestmentHistory, addToPortfolio
+from db.crud import insertNewInvestmentHistory
 
 def buyInvestment(conn, key_bindings):
     """
@@ -20,7 +20,6 @@ def buyInvestment(conn, key_bindings):
         try:
             with conn.cursor() as cur:
                 insertNewInvestmentHistory(cur, ticker, price, volume, brokerage, date, 'BUY')
-                addToPortfolio(cur, ticker, price, volume, brokerage)
                 conn.commit()
             print(f"Purchased {volume} of {ticker} at ${price} per share on {date} with a ${brokerage} brokerage fee. Net trade value: ${cost}\n")
         except Exception as e:

@@ -6,7 +6,9 @@ import psycopg2
 import json
 from datetime import datetime
 
-def ingest_investment_history(data, db_params):
+from db.db_handler import get_connection
+
+def ingest_investment_history(data):
     """
     Ingests investment history JSON into PostgreSQL.
     
@@ -14,6 +16,7 @@ def ingest_investment_history(data, db_params):
     :param db_params: Dictionary containing PostgreSQL connection details:
                       {'dbname': ..., 'user': ..., 'password': ..., 'host': ..., 'port': ...}
     """
+
     insert_query = """
     INSERT INTO investment_history (ticker, price, volume, brokerage, date, status)
     VALUES (%s, %s, %s, %s, %s, %s)
@@ -21,7 +24,7 @@ def ingest_investment_history(data, db_params):
     """
 
     try:
-        conn = psycopg2.connect(**db_params)
+        conn = get_connection()
         cur = conn.cursor()
         
         for record in data.values():
@@ -45,7 +48,7 @@ def ingest_investment_history(data, db_params):
     except Exception as e:
         print("Error ingesting data:", e)
 
-def ingest_dividends(data, db_params):
+def ingest_dividends(data):
     """
     Ingests dividend data into the PostgreSQL 'dividends' table.
 
@@ -53,6 +56,7 @@ def ingest_dividends(data, db_params):
     :param db_params: Dictionary with connection params:
                       {'dbname': ..., 'user': ..., 'password': ..., 'host': ..., 'port': ...}
     """
+
     insert_query = """
     INSERT INTO dividends (ticker, date, distribution_value)
     VALUES (%s, %s, %s)
@@ -60,7 +64,7 @@ def ingest_dividends(data, db_params):
     """
     
     try:
-        conn = psycopg2.connect(**db_params)
+        conn = get_connection()
         cur = conn.cursor()
 
         for record in data.values():
@@ -80,51 +84,14 @@ def ingest_dividends(data, db_params):
     except Exception as e:
         print("Error ingesting dividends:", e)
 
-def ingest_current_portfolio(data, db_params):
-    """
-    Ingests current portfolio data into the 'current_portfolio' table.
-
-    :param data: Dictionary where each key is a ticker, and each value is a dict of volume, cost, totalBrokerage.
-    :param db_params: Dictionary with connection params:
-                      {'dbname': ..., 'user': ..., 'password': ..., 'host': ..., 'port': ...}
-    """
-    insert_query = """
-    INSERT INTO current_portfolio (ticker, cost, volume, total_brokerage)
-    VALUES (%s, %s, %s, %s)
-    ON CONFLICT (ticker) DO UPDATE 
-        SET cost = EXCLUDED.cost,
-            volume = EXCLUDED.volume,
-            total_brokerage = EXCLUDED.total_brokerage;
-    """
-
-    try:
-        conn = psycopg2.connect(**db_params)
-        cur = conn.cursor()
-
-        for ticker, values in data.items():
-            values_tuple = (
-                ticker,
-                float(values['cost']),
-                int(values['volume']),
-                float(values['totalBrokerage'])
-            )
-            cur.execute(insert_query, values_tuple)
-
-        conn.commit()
-        cur.close()
-        conn.close()
-        print("Current portfolio successfully ingested.")
-
-    except Exception as e:
-        print("Error ingesting current portfolio:", e)
-
-def ingest_target_balance(data, db_params):
+def ingest_target_balance(data):
     """
     Ingests target balance data into the 'target_balance' table.
 
     :param data: Dictionary where each key is a ticker or '+'-joined tickers, and value is the target percentage.
     :param db_params: Dictionary with PostgreSQL connection params.
     """
+
     insert_query = """
     INSERT INTO target_balance (bucket_tickers, percentage)
     VALUES (%s, %s)
@@ -133,7 +100,7 @@ def ingest_target_balance(data, db_params):
     """
 
     try:
-        conn = psycopg2.connect(**db_params)
+        conn = get_connection()
         cur = conn.cursor()
 
         for key, percentage in data.items():
@@ -150,17 +117,18 @@ def ingest_target_balance(data, db_params):
         print("Error ingesting target balance:", e)
 
 if __name__ == "__main__":
-    data = json.loads()
+    DIVIDEND_FILE = '../store/dividend_history.json'
+    INVESTMENT_FILE = '../store/investment_history.json'
+    TARGET_BALANCE_FILE = '../store/portfolio_balance.json'
 
-    db_params = {
-        'dbname': 'your_db',
-        'user': 'your_user',
-        'password': 'your_password',
-        'host': 'localhost',
-        'port': 5432
-    }
+    with open(INVESTMENT_FILE, 'r') as file:
+        data = json.loads(file.read())
+        ingest_investment_history(data)
 
-    ingest_current_portfolio(data, db_params)
-    ingest_dividends(data, db_params)
-    ingest_target_balance(data, db_params)
-    ingest_investment_history(data, db_params)
+    with open(DIVIDEND_FILE, 'r') as file:
+        data = json.loads(file.read())
+        ingest_dividends(data)
+
+    with open(TARGET_BALANCE_FILE, 'r') as file:
+        data = json.loads(file.read())
+        ingest_target_balance(data)

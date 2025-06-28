@@ -1,55 +1,49 @@
-###################################
-# current_portfolio table queries #
-###################################
+##################################
+# current_portfolio view queries #
+##################################
 def distinctTickersQuery():
     return """
-        SELECT DISTINCT ticker, cost 
+        SELECT DISTINCT 
+            ticker, 
+            ROUND(total_volume * average_price, 2) AS calculated_cost
         FROM current_portfolio
-        ORDER BY cost DESC;
+        ORDER BY calculated_cost DESC;
+    """
+
+def tickerExistsQuery():
+    return """
+        SELECT EXISTS (
+            SELECT 1 
+            FROM current_portfolio 
+            WHERE ticker = %s
+        );
     """
 
 def currentPortfolioTickerQuery():
     return """
         SELECT 
             c.ticker, 
-            c.cost, 
-            c.volume, 
-            c.total_brokerage, 
-            COALESCE(SUM(d.distribution_value), 0)
+            ROUND(c.total_volume * c.average_price, 2) AS calculated_cost, 
+            c.total_volume, 
+            c.buy_brokerage, 
+            c.sell_brokerage,
+            COALESCE(SUM(d.distribution_value), 0) AS total_dividends,
+            c.realized_profit
         FROM current_portfolio c 
         LEFT JOIN dividends d ON c.ticker = d.ticker
         WHERE c.ticker = %s
-        GROUP BY c.ticker, c.cost, c.volume, c.total_brokerage;
+        GROUP BY 
+            c.ticker, 
+            c.total_volume, 
+            c.average_price, 
+            c.buy_brokerage, 
+            c.sell_brokerage,
+            c.realized_profit;
     """
 
-def currentPortfolioBuyUpdate():
+def refreshCurrentPortfolio():
     return """
-        UPDATE current_portfolio
-        SET cost = cost + %s,
-            total_brokerage = total_brokerage + %s,
-            volume = volume + %s
-        WHERE ticker = %s;
-    """
-
-def currentPortfolioSellUpdate():
-    return """
-        UPDATE current_portfolio
-        SET cost = cost - %s,
-            total_brokerage = total_brokerage + %s,
-            volume = volume - %s
-        WHERE ticker = %s;
-    """
-
-def currentPortfolioInsert():
-    return """
-        INSERT INTO current_portfolio (ticker, cost, total_brokerage, volume)
-        VALUES (%s, %s, %s, %s);
-    """
-
-def currentPortfolioDeleteIfZero():
-    return """
-        DELETE FROM current_portfolio
-        WHERE ticker = %s AND volume <= 0;
+        REFRESH MATERIALIZED VIEW current_portfolio;
     """
 
 

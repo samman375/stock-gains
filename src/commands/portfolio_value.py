@@ -27,41 +27,85 @@ def portfolioValue(conn):
     totalGain = 0
     totalNetGain = 0
     totalBrokerage = 0
+    totalRealisedGains = 0
+
+    soldPositionsTotalProfit = 0
+    soldPositionDividends = 0
+    soldPositionBrokerages = 0
+    soldRealisedGains = 0
 
     for ticker in data.keys():
         tickerData = tickerValueExtractor(conn, data[ticker])
-        outputDfRows.append(tickerData[:-1])
+        tickerVolume = tickerData[3]
 
-        totalCost += tickerData[3]
-        totalValue += tickerData[4]
-        totalDividend += tickerData[9]
-        totalGain += tickerData[7]
-        totalNetGain += tickerData[8]
-        totalBrokerage += tickerData[10]
+        if tickerVolume > 0:
+            outputDfRows.append(convertDataRowToTableRow(tickerData[:-1]))
 
-    totalNetGain += totalDividend
+            totalCost += tickerData[4]
+            totalValue += tickerData[5]
+            totalDividend += tickerData[10]
+            totalBrokerage += tickerData[11] + tickerData[12]
+            totalRealisedGains += tickerData[13]
+        else:
+            # We want a row added for sold out positions to subtract from total cost
+            soldRealisedGains += tickerData[13]
+            soldPositionDividends += tickerData[10]
+            soldPositionBrokerages += tickerData[11] + tickerData[12]
+            soldPositionsTotalProfit += soldRealisedGains + soldPositionDividends - soldPositionBrokerages
+    
+    totalCost -= soldPositionsTotalProfit
+    totalGain = totalValue - totalCost
+    totalNetGain = (totalValue + totalDividend + totalRealisedGains) - (totalCost + totalBrokerage)
 
-    if totalCost == 0 or totalCost == 0 and totalBrokerage == 0:
+    if totalCost - soldPositionsTotalProfit <= 0:
         percGain = "N/A"
         netPercGain = "N/A"
     else:
-        percGain = round((totalValue / (totalCost - totalBrokerage) - 1) * 100, 2)
+        percGain = round((totalGain / totalCost) * 100, 2)
         netPercGain = round((totalNetGain / totalCost) * 100, 2)
+
+    soldRow = [
+        '',
+        'Sold Out Positions',
+        '',
+        f'-{soldPositionsTotalProfit:.2f}',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+    ]
+    outputDfRows.append(soldRow)
 
     totalRow = [
         'Total', 
         '', 
         '', 
-        totalCost, 
-        totalValue, 
-        percGain, 
-        netPercGain, 
-        totalGain, 
-        totalNetGain, 
-        totalDividend
+        f'{totalCost:.2f}', 
+        f'{totalValue:.2f}', 
+        f'{percGain:.2f}', 
+        f'{netPercGain:.2f}', 
+        f'{totalGain:.2f}', 
+        f'{totalNetGain:.2f}', 
+        f'{totalDividend:.2f}'
     ]
     outputDfRows.append(totalRow)
 
     df = pd.DataFrame(outputDfRows, columns=OUTPUT_COLUMNS)
     table = tabulate(df, headers='keys', tablefmt='rounded_grid', showindex=False, maxcolwidths=MAX_COL_WIDTHS)
     print(table)
+
+def convertDataRowToTableRow(dataRow):
+    return [
+        dataRow[0],  # Ticker
+        dataRow[1],  # Full Name
+        f"{dataRow[2]:.2f}",  # Price
+        f"{dataRow[4]:.2f}",  # Cost
+        f"{dataRow[5]:.2f}",  # Value
+        f"{dataRow[6]}",  # %Gain
+        f"{dataRow[7]}",  # %NetGain
+        f"{dataRow[8]:.2f}",  # Gain
+        f"{dataRow[9]:.2f}",  # Net Gain
+        f"{dataRow[10]:.2f}"  # Dividends
+    ]
