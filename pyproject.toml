@@ -1,0 +1,25 @@
+[project]
+name = "stock-gains"
+version = "1.0.0"
+description = "A Python package providing a CLI interface for providing investment portfolio information."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Sam Thorley", email = "samman375@protonmail.com" }]
+dependencies = [
+    "pandas>=2.0.0",
+    "yfinance>=0.2.61",
+    "tabulate>=0.9.0",
+    "prompt-toolkit>=3.0.38",
+    "psycopg2-binary>=2.9.10",
+]
+
+[project.scripts]
+stock-gains = "stock_gains:main"
+
+[build-system]
+requires = ["setuptools>=63", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]

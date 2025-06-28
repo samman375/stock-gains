@@ -1,3 +1,6 @@
+build/
 store/
 __pycache__/
 .DS_Store
+src/db/backup_path.json
+src/logfile
