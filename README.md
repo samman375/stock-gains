@@ -9,7 +9,7 @@ Disclaimer:
 
 See open issues for future features and bugs.
 
-## Installation
+## Installation & Usage
 
 To install clone this repository in a suitable location, then:
 ```sh
@@ -21,6 +21,8 @@ Then run from any directory:
 ```sh
 stock-gains
 ```
+
+To see the list of available commands use `help`.
 
 ### \[Optional\] Adding executable to PATH for autocompletion in terminal
 
