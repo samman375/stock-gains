@@ -1,2 +1,0 @@
-[console_scripts]
-stock-gains = stock_gains:main
