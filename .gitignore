@@ -1,6 +1,8 @@
 build/
 store/
+legacy/store/
 __pycache__/
 .DS_Store
 src/db/backup_path.json
 src/logfile
+stock_gains.egg-info/

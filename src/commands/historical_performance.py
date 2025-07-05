@@ -1,10 +1,12 @@
 import pandas as pd
 from tabulate import tabulate
 
-from db.crud import getDistinctTickers
+from db.crud import getDistinctTickersWithPositions
 from fetchers.yfinance_fetcher import getYfinanceTickerData
+from utils.table_utils import formatPercentage, formatPeRatio
 
-OUTPUT_COLUMNS = ['Ticker', 'Name', 'YTD (%)', '3Y (%)', '5Y (%)', 'P/E Ratio']
+OUTPUT_COLUMNS = ['Ticker', 'Name', 'YTD', '3Y', '5Y', 'P/E Ratio']
+COL_ALIGN = ['left', 'left', 'right', 'right', 'right', 'right']
 
 def historicalPerformance(conn):
     """
@@ -13,7 +15,7 @@ def historicalPerformance(conn):
     Params:
     - ticker: List of tickers to extract performance data for
     """
-    tickers = getDistinctTickers(conn)
+    tickers = getDistinctTickersWithPositions(conn)
     if not tickers:
         print("No tickers found in current portfolio.")
         return
@@ -26,10 +28,10 @@ def historicalPerformance(conn):
         if ticker not in data:
             continue
         
-        ytd = str("%.2f" % (data[ticker]['ytdReturn'] * 100)) if data[ticker]['ytdReturn'] else '- '
-        threeYrReturn = str("%.2f" % (data[ticker]['threeYrReturn'] * 100)) if data[ticker]['threeYrReturn'] else '- '
-        fiveYrReturn = str("%.2f" % (data[ticker]['fiveYrReturn'] * 100)) if data[ticker]['fiveYrReturn'] else '- '
-        peRatio = str("%.2f" % data[ticker]['peRatio']) if data[ticker]['peRatio'] else '- '
+        ytd = formatPercentage(data[ticker]['ytdReturn'])
+        threeYrReturn = formatPercentage(data[ticker]['threeYrReturn'] * 100 if data[ticker]['threeYrReturn'] is not None else None)
+        fiveYrReturn = formatPercentage(data[ticker]['fiveYrReturn'] * 100 if data[ticker]['fiveYrReturn'] is not None else None)
+        peRatio = formatPeRatio(data[ticker]['peRatio'])
 
         outputDfRows.append([
             ticker, 
@@ -41,5 +43,5 @@ def historicalPerformance(conn):
         ])
 
     df = pd.DataFrame(outputDfRows, columns=OUTPUT_COLUMNS)
-    table = tabulate(df, headers='keys', tablefmt='rounded_grid', showindex=False)
+    table = tabulate(df, headers='keys', tablefmt='rounded_grid', showindex=False, colalign=COL_ALIGN)
     print(table)

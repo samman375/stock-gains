@@ -2,16 +2,16 @@ import re
 
 def postgresArrayToList(array):
     """
-    Converts a PostgreSQL array to a string representation.
-
-    params:
-    - array: PostgreSQL array
-
-    Returns:
-    - string representation of the array
+    Converts a PostgreSQL array (string or list) to a flat list of strings.
+    Handles cases like '{IVV,VEU}' or ['IVV,VEU'] or ['IVV'].
     """
     if not array or array == '{}':
         return []
+    if isinstance(array, list):
+        result = []
+        for item in array:
+            result.extend([x.strip() for x in item.split(',') if x.strip()])
+        return result
     return [item.strip() for item in array.strip('{}').split(',') if item.strip()]
 
 def get_schema_table_names(schema_file):

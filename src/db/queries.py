@@ -10,6 +10,16 @@ def distinctTickersQuery():
         ORDER BY calculated_cost DESC;
     """
 
+def distinctTickersWithPositions():
+    return """
+        SELECT DISTINCT 
+            ticker, 
+            ROUND(total_volume * average_price, 2) AS calculated_cost
+        FROM current_portfolio
+        WHERE total_volume > 0
+        ORDER BY calculated_cost DESC;
+    """
+
 def tickerExistsQuery():
     return """
         SELECT EXISTS (

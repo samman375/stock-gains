@@ -4,18 +4,22 @@ from prompt_toolkit import prompt
 
 import utils.input_utils as i
 import utils.input_validation as v
-from utils.db_utils import postgresArrayToList
-from fetchers.yfinance_fetcher import getYfinanceTickerData
 from db.crud import (
     getTargetBalance, 
     clearTargetBalance, 
     insertTargetBalance, 
     getCurrentPortfolioTickerData
 )
+from fetchers.yfinance_fetcher import getYfinanceTickerData
+from utils.db_utils import postgresArrayToList
+from utils.table_utils import formatPercentage, formatPeRatio, formatCurrency, formatTickerGroup
 
-PORTFOLIO_BALANCE_OUTPUT_COLUMNS = ['Ticker Bucket', 'Target Percentage (%)']
+PORTFOLIO_BALANCE_OUTPUT_COLUMNS = ['Ticker Bucket', 'Target Percentage']
 VALUATIONS_COLUMNS = ['Ticker', 'P/E Ratio', '52wk High Diff', '52wk Low Diff', '50-Day Avg Diff', '200-Day Avg Diff']
 SUGGESTIONS_COLUMNS = ['Ticker Group', 'Current %', 'Target %', 'Value', 'Target Value', 'Suggestion']
+COL_ALIGN_PORTFOLIO_BALANCE = ['left', 'right']
+COL_ALIGN_VALUATIONS = ['left', 'right', 'right', 'right', 'right', 'right']
+COL_ALIGN_SUGGESTIONS = ['left', 'right', 'right', 'right', 'right', 'right']
 
 def updatePortfolioBalanceTargets(conn, key_bindings):
     """
@@ -39,7 +43,8 @@ def updatePortfolioBalanceTargets(conn, key_bindings):
             return False
     
     except KeyboardInterrupt:
-        print("Operation cancelled.")
+        print("Operation cancelled. Proceeding with existing target balance.")
+        return True
 
     clearTargetBalance(conn)
     with conn.cursor() as cur:
@@ -74,10 +79,10 @@ def printPortfolioBalance(conn):
     portfolioBalanceDfRows = []
     for bucket, targetPerc in portfolioBalance:
         tickers = postgresArrayToList(bucket)
-        portfolioBalanceDfRows.append([tickers, targetPerc])
+        portfolioBalanceDfRows.append([formatTickerGroup(tickers), formatPercentage(targetPerc)])
 
     df = pd.DataFrame(portfolioBalanceDfRows, columns=PORTFOLIO_BALANCE_OUTPUT_COLUMNS)
-    table = tabulate(df, headers='keys', tablefmt='rounded_grid', showindex=False)
+    table = tabulate(df, headers='keys', tablefmt='rounded_grid', showindex=False, colalign=COL_ALIGN_PORTFOLIO_BALANCE)
     print('\nCurrent Portfolio Balance Targets:')
     print(table)
 
@@ -89,17 +94,28 @@ def rebalanceSuggestions(conn, key_bindings):
     if not targetBalance:
         print('\nTarget portfolio balance input required.')
         targetBalance = promptUpdatePortfolioBalanceTargets(conn, key_bindings)
+
+        if not targetBalance:
+            print("No target balance set. Exiting.")
+            return
     else:
-        updateTargetBalance = i.getBoolInput('Update target balance? (Y/N): ', key_bindings=key_bindings)
+        try:
+            updateTargetBalance = i.getBoolInput('Update target balance? (Y/N): ', key_bindings=key_bindings)
+        except KeyboardInterrupt:
+            print("Operation cancelled. Proceeding with existing target balance.")
+        
         if updateTargetBalance:
             targetBalance = promptUpdatePortfolioBalanceTargets(conn, key_bindings)
 
     printPortfolioBalance(conn)
 
     targetTotalValue = 0
-    userHasTargetValue = i.getBoolInput('Do you have a total portfolio target in mind (Y/N)? ', key_bindings=key_bindings)
-    if userHasTargetValue:
-        targetTotalValue = float(prompt('Enter target value: $', validator=v.NonNegativeFloatValidator(), key_bindings=key_bindings))
+    try:
+        userHasTargetValue = i.getBoolInput('Do you have a total portfolio target in mind (Y/N)? ', key_bindings=key_bindings)
+        if userHasTargetValue:
+            targetTotalValue = float(prompt('Enter target value: $', validator=v.NonNegativeFloatValidator(), key_bindings=key_bindings))
+    except KeyboardInterrupt:
+        print("Operation cancelled. Proceeding with existing target balance.")
 
     # Create buckets dictionary with format:
     # {
@@ -159,15 +175,15 @@ def rebalanceSuggestions(conn, key_bindings):
 
         valuationsDfRows.append([
             ticker,
-            allLiveTickerData[ticker]['peRatio'],
-            prcFromFiftyTwoWkHigh,
-            prcFromFiftyTwoWkLow,
-            prcFromFiftyDayAvg,
-            prcFromTwoHundredDayAvg
+            formatPeRatio(allLiveTickerData[ticker]['peRatio']),
+            formatPercentage(prcFromFiftyTwoWkHigh),
+            formatPercentage(prcFromFiftyTwoWkLow),
+            formatPercentage(prcFromFiftyDayAvg),
+            formatPercentage(prcFromTwoHundredDayAvg)
         ])
 
     valuationsDf = pd.DataFrame(valuationsDfRows, columns=VALUATIONS_COLUMNS)
-    table = tabulate(valuationsDf, headers='keys', tablefmt='rounded_grid', showindex=False)
+    table = tabulate(valuationsDf, headers='keys', tablefmt='rounded_grid', showindex=False, colalign=COL_ALIGN_VALUATIONS)
     print(table)
 
     suggestionsDfRows = []
@@ -176,14 +192,14 @@ def rebalanceSuggestions(conn, key_bindings):
         targetDiff = targetValue - buckets[bucket]['value']
 
         suggestionsDfRows.append([
-            buckets[bucket]['tickers'],
-            round(buckets[bucket]['currentPerc'], 2),
-            round(buckets[bucket]['targetPerc'], 2),
-            round(buckets[bucket]['value'], 2),
-            round(targetValue, 2),
-            round(targetDiff, 2)
+            formatTickerGroup(buckets[bucket]['tickers']),
+            formatPercentage(round(buckets[bucket]['currentPerc'], 2)),
+            formatPercentage(round(buckets[bucket]['targetPerc'], 2)),
+            formatCurrency(round(buckets[bucket]['value'], 2)),
+            formatCurrency(round(targetValue, 2)),
+            formatCurrency(round(targetDiff, 2))
         ])
 
     suggestionsDf = pd.DataFrame(suggestionsDfRows, columns=SUGGESTIONS_COLUMNS)
-    table = tabulate(suggestionsDf, headers='keys', tablefmt='rounded_grid', showindex=False)
+    table = tabulate(suggestionsDf, headers='keys', tablefmt='rounded_grid', showindex=False, colalign=COL_ALIGN_SUGGESTIONS)
     print(table)

@@ -20,6 +20,24 @@ def getDistinctTickers(conn):
         print(f"Database error: {e}")
         return []
 
+def getDistinctTickersWithPositions(conn):
+    """
+    Returns a list of all distinct tickers in current portfolio with active positions, ordered by cost
+    """
+    try:
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(q.distinctTickersWithPositions())
+                result = cur.fetchall()
+
+                tickers = [row[0] for row in result]
+
+                return tickers
+
+    except psycopg2.Error as e:
+        print(f"Database error: {e}")
+        return []
+
 def checkIfTickerExists(cur, ticker):
     """
     Checks if a ticker exists in the current_portfolio table.
