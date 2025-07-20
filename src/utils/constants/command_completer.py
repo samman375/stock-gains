@@ -8,11 +8,13 @@ COMMANDS = NestedCompleter.from_nested_dict({
     "sell": None,
     "dividend": None,               # Add dividend estimate
     # "ammend": None,               # decide how to do dividend vs buy/sale ammend
-    "historical-performance": {     # historical performance of all owned tickers
+    "investment-performance": {     # historical performance of all owned tickers
         "--ticker": None,           # historical performance of specific ticker
     },
+    "index-performance": None,      # historical performance of index tickers
     "investment-history": None,
     "portfolio-balance": None,      # Add market percentage
+    "portfolio-growth": None,       # Add growth over time of current portfolio
     "rebalance-suggestions": None,
     "settings": None,               # Add backup location, restore backup
     "help": None,                   # Auto-generated?
@@ -25,11 +27,13 @@ COMMAND_DESCRIPTIONS = {
     "buy": "Record a new investment purchase",
     "sell": "Record a sale of an investment",
     "dividend": "Record a dividend payment",
+    "index-performance": "Show historical performance of index tickers",
     "investment-history": "Show trade or dividend investment history",
-    "historical-performance": "Show historical performance of current investments",
+    "investment-performance": "Show historical performance of current investments",
     # "--ticker": "Show historical performance of specific ticker",
     "rebalance-suggestions": "Suggest portfolio rebalancing",
     "portfolio-balance": "Show exposure balances of current portfolio",
+    "portfolio-growth": "Show growth of portfolio over time",
     "ammend": "Amend a trade or dividend entry",
     "settings": "Configure application settings",
 }

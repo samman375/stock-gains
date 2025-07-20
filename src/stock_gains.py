@@ -4,14 +4,15 @@ from prompt_toolkit.key_binding import KeyBindings
 from commands.buy import buyInvestment
 from commands.dividend import dividend
 from commands.help import outputHelp
-from commands.historical_performance import historicalPerformance
+from commands.index_performance import indexPerformance
+from commands.investment_performance import investmentPerformance
 from commands.investment_history import investmentHistory
 from commands.portfolio_value import portfolioValue
 from commands.rebalance_suggestions import rebalanceSuggestions
 from commands.sell import sellInvestment
 from db.backup_handler import backup_database, restore_database
 from db.db_handler import database_setup
-from utils.command_completer import COMMANDS, COMMAND_DESCRIPTIONS
+from utils.constants.command_completer import COMMANDS, COMMAND_DESCRIPTIONS
 
 # Define a key binding for the ESC key
 kb = KeyBindings()
@@ -46,12 +47,18 @@ def main():
                 dividend(conn, kb)
             elif user_input == "investment-history":
                 investmentHistory(conn, kb)
-            elif user_input == "historical-performance":
-                historicalPerformance(conn)
+            elif user_input == "investment-performance":
+                investmentPerformance(conn)
+            elif user_input == "investment-performance --ticker":
+                print("Ticker level investment performance is not implemented yet.")
+            elif user_input == "index-performance":
+                indexPerformance(conn)
             elif user_input == "rebalance-suggestions":
                 rebalanceSuggestions(conn, kb)
             elif user_input == "portfolio-balance":
                 print("Portfolio balance feature is not implemented yet.")
+            elif user_input == "portfolio-growth":
+                print("Portfolio growth feature is not implemented yet.")
             elif user_input == "ammend":
                 print("Ammend feature is not implemented yet.")
             elif user_input == "help":

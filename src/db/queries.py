@@ -122,3 +122,15 @@ def insertTargetBalance():
         INSERT INTO target_balance (bucket_tickers, percentage)
         VALUES (%s, %s);
     """
+
+##################
+# settings table #
+##################
+
+def settingsIndicesOfInterestQuery():
+    return """
+        SELECT 
+            attribute_value 
+        FROM settings
+        WHERE attribute = 'indices_of_interest';
+    """
