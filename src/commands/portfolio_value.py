@@ -7,14 +7,14 @@ from utils.data_processing import tickerValueExtractor
 from utils.table_utils import formatCurrency, formatPercentage
 
 OUTPUT_COLUMNS_FULL = ['Ticker', 'Full Name', 'Price', 'Vol', 'Cost', 'Value', 'Dividends', 'Gain', 'Net Gain', '% Gain', '% NetGain']
-OUTPUT_COLUMNS_MIN = ['Ticker', 'Price', 'Cost', 'Value', 'Dividends', 'Gain', 'Net Gain', '% Gain', '% NetGain']
+OUTPUT_COLUMNS_MIN = ['Ticker', 'Cost', 'Value', 'Dividends', 'Gain', 'Net Gain', '% Gain', '% NetGain']
 MAX_COL_WIDTHS_FULL = [8, 30, 8, 6, 11, 11, 10, 10, 10, 7, 7]
-MAX_COL_WIDTHS_MIN = [8, 8, 11, 11, 10, 10, 10, 7, 7]
+MAX_COL_WIDTHS_MIN = [8, 11, 11, 10, 10, 10, 7, 7]
 COL_ALIGN_FULL = ['left', 'left'] + ['right'] * (len(OUTPUT_COLUMNS_FULL) - 2)
 COL_ALIGN_MIN = ['left'] + ['right'] * (len(OUTPUT_COLUMNS_MIN) - 1)
 
 # Indices of columns to keep for minimal output
-MINIMAL_INDICES = [0, 2, 4, 5, 6, 7, 8, 9, 10]
+MINIMAL_INDICES = [0, 4, 5, 6, 7, 8, 9, 10]
 
 def portfolioValue(conn, fullOutput=False):
     tickers = getDistinctTickers(conn)
@@ -69,15 +69,15 @@ def portfolioValue(conn, fullOutput=False):
     soldRow = [
         '*',
         'Sold Out Positions',
-        '',
-        '',
+        '-',
+        '-',
         formatCurrency(soldPositionsTotalProfit * -1),
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
+        '-',
+        '-',
+        '-',
+        '-',
+        '-',
+        '-',
     ]
     if not fullOutput:
         soldRow = [soldRow[i] for i in MINIMAL_INDICES]

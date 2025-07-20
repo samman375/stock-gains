@@ -8,7 +8,7 @@ from utils.table_utils import formatPercentage, formatPeRatio
 OUTPUT_COLUMNS = ['Ticker', 'Name', 'YTD', '3Y', '5Y', 'P/E Ratio']
 COL_ALIGN = ['left', 'left', 'right', 'right', 'right', 'right']
 
-def historicalPerformance(conn):
+def investmentPerformance(conn):
     """
     Given data from yfinance lookup, produces a dictionary of all required information for listing ticker performance.
 

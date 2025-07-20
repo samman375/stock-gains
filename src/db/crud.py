@@ -1,3 +1,4 @@
+import ast
 import psycopg2
 
 import db.queries as q
@@ -204,3 +205,20 @@ def insertTargetBalance(cur, ticker, percentage):
     - percentage (float): The target percentage for the ticker.
     """
     cur.execute(q.insertTargetBalance(), (ticker, percentage,))
+
+def getIndicesOfInterestSettings(conn):
+    """
+    Returns the indices of interest from the `settings` table as a list.
+    """
+    try:
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(q.settingsIndicesOfInterestQuery())
+                result = cur.fetchone()
+                if result and result[0]:
+                    return ast.literal_eval(result[0])
+                else:
+                    return []
+    except psycopg2.Error as e:
+        print(f"Database error: {e}")
+        return []

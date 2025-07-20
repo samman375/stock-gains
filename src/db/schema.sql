@@ -24,6 +24,11 @@ CREATE TABLE IF NOT EXISTS target_balance (
     PRIMARY KEY (bucket_tickers)
 );
 
+CREATE TABLE IF NOT EXISTS settings (
+    attribute VARCHAR(255) PRIMARY KEY,
+    attribute_value TEXT NOT NULL
+);
+
 -- Add indexes to improve query performance
 DO $$
 BEGIN

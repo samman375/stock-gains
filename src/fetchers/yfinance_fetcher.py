@@ -34,20 +34,30 @@ def getYfinanceTickerData(conn, tickers):
     for ticker in tickers.split():
         data[ticker] = {
             'ticker': ticker,
-            'price': tickerData.tickers[ticker].info['ask'],
-            'fullName': tickerData.tickers[ticker].info['longName'],
+            'price': tickerData.tickers[ticker].info.get('ask', None),
+            'fullName': tickerData.tickers[ticker].info.get('longName', None),
+            'shortName': tickerData.tickers[ticker].info.get('shortName', None),
+            'currency': tickerData.tickers[ticker].info.get('currency', None),
+            'fullExchangeName': tickerData.tickers[ticker].info.get('fullExchangeName', None),
+            'quoteType': tickerData.tickers[ticker].info.get('quoteType', None),
+            'marketState': tickerData.tickers[ticker].info.get('marketState', None),
             'yield': tickerData.tickers[ticker].info.get('yield', 0),
-            'quoteType': tickerData.tickers[ticker].info['quoteType'],
+            'quoteType': tickerData.tickers[ticker].info.get('quoteType', None),
             'peRatio': tickerData.tickers[ticker].info.get('trailingPE', None),
-            'volume': tickerData.tickers[ticker].info['volume'],
+            'volume': tickerData.tickers[ticker].info.get('volume', None),
             'ytdReturn': tickerData.tickers[ticker].info.get('ytdReturn', None),
             'threeYrReturn': tickerData.tickers[ticker].info.get('threeYearAverageReturn', None),
             'fiveYrReturn': tickerData.tickers[ticker].info.get('fiveYearAverageReturn', None),
             'fiftyTwoWkLow': tickerData.tickers[ticker].info.get('fiftyTwoWeekLow', None),
             'fiftyTwoWkHigh': tickerData.tickers[ticker].info.get('fiftyTwoWeekHigh', None),
             'fiftyDayAvg': tickerData.tickers[ticker].info.get('fiftyDayAverage', None),
-            'twoHundredDayAvg': tickerData.tickers[ticker].info.get('twoHundredDayAverage', None)
-            # TODO: Add EPS, Beta, Market Cap
+            'regularMarketPrice': tickerData.tickers[ticker].info.get('regularMarketPrice', None),
+            'regularMarketPreviousClose': tickerData.tickers[ticker].info.get('regularMarketPreviousClose', None),
+            'twoHundredDayAvg': tickerData.tickers[ticker].info.get('twoHundredDayAverage', None),
+            'fiftyTwoWeekChangePercent': tickerData.tickers[ticker].info.get('fiftyTwoWeekChangePercent', None),
+            'fiftyTwoWeekLowChangePercent': tickerData.tickers[ticker].info.get('fiftyTwoWeekLowChangePercent', None),
+            'fiftyTwoWeekHighChangePercent': tickerData.tickers[ticker].info.get('fiftyTwoWeekHighChangePercent', None),
+            'twoHundredDayAverageChangePercent': tickerData.tickers[ticker].info.get('twoHundredDayAverageChangePercent', None)
         }
 
     return data
