@@ -8,6 +8,7 @@ COMMANDS = NestedCompleter.from_nested_dict({
     "sell": None,
     "dividend": None,               # Add dividend estimate
     # "ammend": None,               # decide how to do dividend vs buy/sale ammend
+    "fear-and-greed": None,         # Display fear and greed index information
     "investment-performance": {     # historical performance of all owned tickers
         "--ticker": None,           # historical performance of specific ticker
     },
@@ -27,6 +28,7 @@ COMMAND_DESCRIPTIONS = {
     "buy": "Record a new investment purchase",
     "sell": "Record a sale of an investment",
     "dividend": "Record a dividend payment",
+    "fear-and-greed": "Show current CNN Fear and Greed Index information",
     "index-performance": "Show historical performance of index tickers",
     "investment-history": "Show trade or dividend investment history",
     "investment-performance": "Show historical performance of current investments",

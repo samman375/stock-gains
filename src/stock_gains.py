@@ -3,6 +3,7 @@ from prompt_toolkit.key_binding import KeyBindings
 
 from commands.buy import buyInvestment
 from commands.dividend import dividend
+from commands.fear_and_greed import fearAndGreedIndex
 from commands.help import outputHelp
 from commands.index_performance import indexPerformance
 from commands.investment_performance import investmentPerformance
@@ -27,7 +28,9 @@ def main():
         return
 
     # TODO: Prompt for if user wants to restore from backup
-    print("\nWelcome to stock-gains: Command-line portfolio information tool\n")
+    print("\nWelcome to stock-gains: Command-line portfolio information tool")
+    fearAndGreedIndex()
+    
     while True:
         try:
             user_input = prompt("Enter command: ", complete_while_typing=True, complete_in_thread=True, completer=COMMANDS)
@@ -61,6 +64,8 @@ def main():
                 print("Portfolio growth feature is not implemented yet.")
             elif user_input == "ammend":
                 print("Ammend feature is not implemented yet.")
+            elif user_input == "fear-and-greed":
+                fearAndGreedIndex()
             elif user_input == "help":
                 outputHelp(COMMANDS, COMMAND_DESCRIPTIONS)
             elif user_input == "settings":
