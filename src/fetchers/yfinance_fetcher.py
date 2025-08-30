@@ -1,3 +1,4 @@
+import json
 import yfinance as yf
 
 from utils.yfinance_utils import makeTickerString
@@ -16,7 +17,41 @@ def isValidYfinanceTicker(ticker:str):
     except:
         return False
 
-def getYfinanceTickerData(conn, tickers):
+def getTickerPrice(tickerInfo):
+    """
+    Get price from ticker info dictionary
+
+    Params:
+    - tickerInfo: object with ticker information from yfinance
+    """
+    ask = tickerInfo.get('ask', None)
+    previousClose = tickerInfo.get('previousClose', None)
+    
+    if ask is not None and ask > 0:
+        return ask
+    elif previousClose is not None and previousClose > 0:
+        return previousClose
+    else:
+        return None
+    
+def getBeta(tickerInfo):
+    """
+    Get beta from ticker info dictionary
+
+    Params:
+    - tickerInfo: object with ticker information from yfinance
+    """
+    beta = tickerInfo.get('beta', None)
+    beta3Yr = tickerInfo.get('beta3Year', None)
+
+    if beta is not None:
+        return beta
+    elif beta3Yr is not None:
+        return beta3Yr
+    else:
+        return None
+
+def getYfinanceTickerData(conn, tickers, debug=False):
     """
     Get data for tickers from Yahoo Finance API
     
@@ -32,9 +67,12 @@ def getYfinanceTickerData(conn, tickers):
     tickerData = yf.Tickers(tickers)
     data = {}
     for ticker in tickers.split():
+        if debug:
+            print(json.dumps(tickerData.tickers[ticker].info, indent=2, sort_keys=True))
+
         data[ticker] = {
             'ticker': ticker,
-            'price': tickerData.tickers[ticker].info.get('ask', None),
+            'price': getTickerPrice(tickerData.tickers[ticker].info),
             'fullName': tickerData.tickers[ticker].info.get('longName', None),
             'shortName': tickerData.tickers[ticker].info.get('shortName', None),
             'currency': tickerData.tickers[ticker].info.get('currency', None),
@@ -44,7 +82,10 @@ def getYfinanceTickerData(conn, tickers):
             'yield': tickerData.tickers[ticker].info.get('yield', 0),
             'quoteType': tickerData.tickers[ticker].info.get('quoteType', None),
             'peRatio': tickerData.tickers[ticker].info.get('trailingPE', None),
+            'priceToBook': tickerData.tickers[ticker].info.get('priceToBook', None),
+            'eps': tickerData.tickers[ticker].info.get('epsTrailingTwelveMonths', None),
             'volume': tickerData.tickers[ticker].info.get('volume', None),
+            'beta': getBeta(tickerData.tickers[ticker].info),
             'ytdReturn': tickerData.tickers[ticker].info.get('ytdReturn', None),
             'threeYrReturn': tickerData.tickers[ticker].info.get('threeYearAverageReturn', None),
             'fiveYrReturn': tickerData.tickers[ticker].info.get('fiveYearAverageReturn', None),
