@@ -27,7 +27,7 @@ def formatPercentage(value):
         return "-"
     return f"{value:.2f}%"
 
-def formatPeRatio(value):
+def formatRatio(value):
     if value is None or value == "N/A":
         return "-"
     return f"{value:.2f}"

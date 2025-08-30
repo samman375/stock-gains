@@ -12,13 +12,13 @@ from db.crud import (
 )
 from fetchers.yfinance_fetcher import getYfinanceTickerData
 from utils.db_utils import postgresArrayToList
-from utils.table_utils import formatPercentage, formatPeRatio, formatCurrency, formatTickerGroup
+from utils.table_utils import formatPercentage, formatRatio, formatCurrency, formatTickerGroup
 
 PORTFOLIO_BALANCE_OUTPUT_COLUMNS = ['Ticker Bucket', 'Target Percentage']
-VALUATIONS_COLUMNS = ['Ticker', 'P/E Ratio', '52wk High Diff', '52wk Low Diff', '50-Day Avg Diff', '200-Day Avg Diff']
+VALUATIONS_COLUMNS = ['Ticker', 'P/E Ratio', 'P/B Ratio', 'Beta', '52wk High Diff', '52wk Low Diff', '50-Day Avg Diff', '200-Day Avg Diff']
 SUGGESTIONS_COLUMNS = ['Ticker Group', 'Current %', 'Target %', 'Value', 'Target Value', 'Suggestion']
 COL_ALIGN_PORTFOLIO_BALANCE = ['left', 'right']
-COL_ALIGN_VALUATIONS = ['left', 'right', 'right', 'right', 'right', 'right']
+COL_ALIGN_VALUATIONS = ['left', 'right', 'right', 'right', 'right', 'right', 'right', 'right']
 COL_ALIGN_SUGGESTIONS = ['left', 'right', 'right', 'right', 'right', 'right']
 
 def updatePortfolioBalanceTargets(conn, key_bindings):
@@ -175,7 +175,9 @@ def rebalanceSuggestions(conn, key_bindings):
 
         valuationsDfRows.append([
             ticker,
-            formatPeRatio(allLiveTickerData[ticker]['peRatio']),
+            formatRatio(allLiveTickerData[ticker]['peRatio']),
+            formatRatio(allLiveTickerData[ticker]['priceToBook']),
+            formatRatio(allLiveTickerData[ticker]['beta']),
             formatPercentage(prcFromFiftyTwoWkHigh),
             formatPercentage(prcFromFiftyTwoWkLow),
             formatPercentage(prcFromFiftyDayAvg),

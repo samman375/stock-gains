@@ -3,7 +3,7 @@ from tabulate import tabulate
 
 from db.crud import getDistinctTickersWithPositions
 from fetchers.yfinance_fetcher import getYfinanceTickerData
-from utils.table_utils import formatPercentage, formatPeRatio
+from utils.table_utils import formatPercentage, formatRatio
 
 OUTPUT_COLUMNS = ['Ticker', 'Name', 'YTD', '3Y', '5Y', 'P/E Ratio']
 COL_ALIGN = ['left', 'left', 'right', 'right', 'right', 'right']
@@ -31,7 +31,7 @@ def investmentPerformance(conn):
         ytd = formatPercentage(data[ticker]['ytdReturn'])
         threeYrReturn = formatPercentage(data[ticker]['threeYrReturn'] * 100 if data[ticker]['threeYrReturn'] is not None else None)
         fiveYrReturn = formatPercentage(data[ticker]['fiveYrReturn'] * 100 if data[ticker]['fiveYrReturn'] is not None else None)
-        peRatio = formatPeRatio(data[ticker]['peRatio'])
+        peRatio = formatRatio(data[ticker]['peRatio'])
 
         outputDfRows.append([
             ticker, 
