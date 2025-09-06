@@ -1,6 +1,6 @@
 [project]
 name = "stock-gains"
-version = "1.1.0"
+version = "1.1.1"
 description = "A Python package providing a CLI interface for providing investment portfolio information."
 readme = "README.md"
 requires-python = ">=3.10"
