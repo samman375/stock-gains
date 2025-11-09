@@ -102,3 +102,34 @@ def getYfinanceTickerData(conn, tickers, debug=False):
         }
 
     return data
+
+def getYfinanceTickerHistory(conn, tickers, start_date):
+    """
+    Fetches historical daily price data for given tickers from start_date to today.
+    
+    Args:
+        conn: Database connection
+        tickers: List of ticker symbols
+        start_date: Datetime object representing the earliest date to fetch
+        
+    Returns:
+        Dictionary of dataframes containing daily price history for each ticker
+    """
+    tickers = makeTickerString(conn, tickers)
+    historical_data = {}
+    
+    for ticker in tickers.split():
+        try:
+            yf_ticker = yf.Ticker(ticker)
+            hist = yf_ticker.history(
+                start=start_date,
+                interval='1d',
+                actions=True
+            )
+            if not hist.empty:
+                historical_data[ticker] = hist
+        except Exception as e:
+            print(f"Error fetching historical data for {ticker}: {str(e)}")
+            continue
+            
+    return historical_data
