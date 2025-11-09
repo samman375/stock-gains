@@ -16,7 +16,7 @@ COL_ALIGN_MIN = ['left'] + ['right'] * (len(OUTPUT_COLUMNS_MIN) - 1)
 # Indices of columns to keep for minimal output
 MINIMAL_INDICES = [0, 4, 5, 6, 7, 8, 9, 10]
 
-def portfolioValue(conn, fullOutput=False):
+def portfolioValue(conn, fullOutput=False, debug=False):
     tickers = getDistinctTickers(conn)
     data = getYfinanceTickerData(conn, tickers)
     outputDfRows = []
@@ -50,16 +50,30 @@ def portfolioValue(conn, fullOutput=False):
             totalBrokerage += tickerData[11] + tickerData[12]
             totalRealisedGains += tickerData[13]
         else:
-            soldRealisedGains += tickerData[13]
-            soldPositionDividends += tickerData[10]
-            soldPositionBrokerages += tickerData[11] + tickerData[12]
-            soldPositionsTotalProfit += soldRealisedGains + soldPositionDividends - soldPositionBrokerages
+            currentTickerRealisedGains = tickerData[13]
+            currentTickerDividends = tickerData[10]
+            currentTickerBrokerage = tickerData[11] + tickerData[12]
+
+            soldRealisedGains += currentTickerRealisedGains
+            soldPositionDividends += currentTickerDividends
+            soldPositionBrokerages += currentTickerBrokerage
+
+            tickerProfit = currentTickerRealisedGains + currentTickerDividends - currentTickerBrokerage
+            soldPositionsTotalProfit += tickerProfit
+
+            if debug:
+                print(f"\nFor ticker {ticker}:")
+                print(f"  Realised Gains: {formatCurrency(currentTickerRealisedGains)}")
+                print(f"  Dividends: {formatCurrency(currentTickerDividends)}")
+                print(f"  Total Brokerage: {formatCurrency(currentTickerBrokerage)}")
+                print(f"  Ticker Profit: {formatCurrency(tickerProfit)}")
+                print(f"Running total of Sold Positions Profit: {formatCurrency(soldPositionsTotalProfit)}")
 
     totalCost -= soldPositionsTotalProfit
     totalGain = totalValue - totalCost
     totalNetGain = (totalValue + totalDividend + totalRealisedGains) - (totalCost + totalBrokerage)
 
-    if totalCost - soldPositionsTotalProfit <= 0:
+    if totalCost <= 0:
         percGain = "N/A"
         netPercGain = "N/A"
     else:
@@ -124,15 +138,15 @@ def portfolioValue(conn, fullOutput=False):
 
 def convertDataRowToTableRow(dataRow):
     return [
-        dataRow[0],  # Ticker
-        dataRow[1],  # Full Name
-        formatCurrency(dataRow[2]),  # Price
-        dataRow[3],  # Volume
-        formatCurrency(dataRow[4]),  # Cost
-        formatCurrency(dataRow[5]),  # Value
-        formatCurrency(dataRow[10]),  # Dividends
-        formatCurrency(dataRow[8]),  # Gain
-        formatCurrency(dataRow[9]),  # Net Gain
-        formatPercentage(dataRow[6]),  # %Gain
-        formatPercentage(dataRow[7])  # %NetGain
+        dataRow[0],                     # Ticker
+        dataRow[1],                     # Full Name
+        formatCurrency(dataRow[2]),     # Price
+        dataRow[3],                     # Volume
+        formatCurrency(dataRow[4]),     # Cost
+        formatCurrency(dataRow[5]),     # Value
+        formatCurrency(dataRow[10]),    # Dividends
+        formatCurrency(dataRow[8]),     # Gain
+        formatCurrency(dataRow[9]),     # Net Gain
+        formatPercentage(dataRow[6]),   # %Gain
+        formatPercentage(dataRow[7])    # %NetGain
     ]
