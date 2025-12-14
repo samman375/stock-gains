@@ -8,6 +8,7 @@ from commands.help import outputHelp
 from commands.index_performance import indexPerformance
 from commands.investment_performance import investmentPerformance
 from commands.investment_history import investmentHistory
+from commands.portfolio_growth import portfolioGrowth
 from commands.portfolio_value import portfolioValue
 from commands.rebalance_suggestions import rebalanceSuggestions
 from commands.sell import sellInvestment
@@ -60,8 +61,8 @@ def main():
                 rebalanceSuggestions(conn, kb)
             elif user_input == "portfolio-balance":
                 print("Portfolio balance feature is not implemented yet.")
-            elif user_input == "portfolio-growth":
-                print("Portfolio growth feature is not implemented yet.")
+            elif user_input == "portfolio-growth" or user_input == "portfolio-growth --full":
+                portfolioGrowth(conn)
             elif user_input == "ammend":
                 print("Ammend feature is not implemented yet.")
             elif user_input == "fear-and-greed":
