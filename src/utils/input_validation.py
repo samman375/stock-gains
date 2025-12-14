@@ -70,3 +70,28 @@ class TickerValidator(Validator):
         ticker = document.text
         if not isValidTicker(self.conn, ticker):
             raise ValidationError(message='Invalid ticker provided.', cursor_position=len(ticker))
+
+class SettingBooleanValidator(Validator):
+    """
+    Validates boolean setting values (true/false only, case-insensitive)
+    """
+    def validate(self, document):
+        value = document.text.lower().strip()
+        if value and value not in ['true', 'false']:
+            raise ValidationError(message='Boolean setting must be: true or false', cursor_position=len(document.text))
+
+class SettingJsonValidator(Validator):
+    """
+    Validates that input is valid JSON (specifically a Python list representation)
+    """
+    def validate(self, document):
+        text = document.text.strip()
+        if text:
+            try:
+                import ast
+                ast.literal_eval(text)
+            except (ValueError, SyntaxError):
+                raise ValidationError(
+                    message="Invalid JSON or Python list format",
+                    cursor_position=len(document.text)
+                )

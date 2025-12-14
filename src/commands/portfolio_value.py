@@ -16,8 +16,9 @@ COL_ALIGN_MIN = ['left'] + ['right'] * (len(OUTPUT_COLUMNS_MIN) - 1)
 # Indices of columns to keep for minimal output
 MINIMAL_INDICES = [0, 4, 5, 6, 7, 8, 9, 10]
 
-def portfolioValue(conn, fullOutput=False, debug=False):
+def portfolioValue(conn, fullOutput=False):
     tickers = getDistinctTickers(conn)
+
     data = getYfinanceTickerData(conn, tickers)
     outputDfRows = []
 
