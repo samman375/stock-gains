@@ -181,7 +181,6 @@ def backup_database():
         "-f", backup_file_path,
         DB_CONFIG["target_db"]
     ]
-    print(command)
     subprocess.run(command, check=True)
     print(f"Backed up database in: {backup_file_path}")
     remove_oldest_backup()
@@ -189,20 +188,25 @@ def backup_database():
 def restore_database():
     """
     Restores database from latest backup if any exist.
+    Returns True if restore succeeded, False otherwise.
     """
     latest_backup = get_latest_backup()
 
     if latest_backup:
-        backup_file_path = f"{get_backup_location}/{latest_backup}"
+        backup_file_path = f"{get_backup_location()}/{latest_backup}"
+        print(f"Restoring from: {backup_file_path}")
         command = [
             "pg_restore", 
             "-h", DB_CONFIG["host"], 
             "-U", DB_CONFIG["user"], 
             "-d", DB_CONFIG["target_db"], 
-            "-v", 
             backup_file_path
         ]
-        subprocess.run(command, check=True)
-        print(f"Database populated from backup: {backup_file_path}")
+        try:
+            subprocess.run(command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            return True
+        except subprocess.CalledProcessError as e:
+            return False
     else:
         print(f"No existing backups to populate database.")
+        return False

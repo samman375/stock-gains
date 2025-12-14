@@ -3,6 +3,7 @@ import psycopg2
 from psycopg2 import OperationalError
 
 from db.config import DB_CONFIG, TABLE_SCHEMA_FILE
+from db.backup_handler import restore_database, get_latest_backup
 
 def get_connection(default_db=False):
     """
@@ -53,6 +54,24 @@ def create_database(default_conn):
         cur.execute(f"CREATE DATABASE {db_name}")
         print(f"Database '{db_name}' created.")
 
+def tables_have_data(conn):
+    """
+    Checks if database tables have any data
+
+    params:
+    - conn: database connection
+    
+    Returns:
+    - bool: True if any tables have data, False otherwise
+    """
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT 1 FROM investment_history LIMIT 1")
+            has_data = cur.fetchone() is not None
+        return has_data
+    except Exception as e:
+        return False
+
 def setup_tables(conn):
     """
     Creates tables from schema file
@@ -76,6 +95,7 @@ def database_setup():
     """
     Sets up database if not already created.
     Also creates tables if not already created.
+    If tables are empty, attempts to restore from backup.
 
     Returns:
     - conn: database connection.
@@ -96,6 +116,33 @@ def database_setup():
     conn = get_connection()
 
     if conn:
-        setup_tables(conn)
+        if not tables_have_data(conn):
+            # Tables are empty, try to restore from backup
+            latest_backup = get_latest_backup()
+            if latest_backup:
+                print("No data found in database. Restoring from latest backup...")
+                # Close the connection before restoring
+                conn.close()
+                try:
+                    restore_success = restore_database()
+                    if restore_success:
+                        print("Database successfully restored from backup.")
+                        # Reconnect after restore completes
+                        conn = get_connection()
+                    else:
+                        print("Failed to restore from backup.")
+                        print("Creating empty database schema instead.")
+                        conn = get_connection()
+                        setup_tables(conn)
+                except Exception as e:
+                    print(f"Failed to restore from backup: {e}")
+                    print("Creating empty database schema instead.")
+                    conn = get_connection()
+                    setup_tables(conn)
+            else:
+                print("No backups found. Creating empty database schema.")
+                setup_tables(conn)
+        else:
+            print("Database already contains data.")
 
     return conn
