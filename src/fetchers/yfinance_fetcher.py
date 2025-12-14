@@ -2,6 +2,8 @@ import json
 import yfinance as yf
 
 from utils.yfinance_utils import makeTickerString
+from db.crud import getSetting
+from utils.constants.defaults import getDefaultSetting
 
 def isValidYfinanceTicker(ticker:str):
     """
@@ -51,7 +53,7 @@ def getBeta(tickerInfo):
     else:
         return None
 
-def getYfinanceTickerData(conn, tickers, debug=False):
+def getYfinanceTickerData(conn, tickers):
     """
     Get data for tickers from Yahoo Finance API
     
@@ -63,6 +65,8 @@ def getYfinanceTickerData(conn, tickers, debug=False):
     - data: dictionary with ticker to information_dictionary key value mappings
     eg. {'IVV.AX': {'price': 100, 'volume': 10000, ...}, ...}
     """
+    debug = getSetting(conn, 'debug_mode', getDefaultSetting('debug_mode')).lower() == 'true'
+    
     tickers = makeTickerString(conn, tickers)
     tickerData = yf.Tickers(tickers)
     data = {}

@@ -127,10 +127,34 @@ def insertTargetBalance():
 # settings table #
 ##################
 
-def settingsIndicesOfInterestQuery():
+def allSettingsQuery():
     return """
-        SELECT 
-            attribute_value 
-        FROM settings
-        WHERE attribute = 'indices_of_interest';
+        SELECT attribute, attribute_value 
+        FROM settings;
+    """
+
+def settingQuery():
+    return """
+        SELECT attribute_value 
+        FROM settings 
+        WHERE attribute = %s;
+    """
+
+def updateSettingQuery():
+    return """
+        UPDATE settings 
+        SET attribute_value = %s 
+        WHERE attribute = %s;
+    """
+
+def insertSettingQuery():
+    return """
+        INSERT INTO settings (attribute, attribute_value) 
+        VALUES (%s, %s);
+    """
+
+def deleteSettingQuery():
+    return """
+        DELETE FROM settings 
+        WHERE attribute = %s;
     """

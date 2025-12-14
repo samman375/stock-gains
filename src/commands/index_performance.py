@@ -1,27 +1,32 @@
+import ast
 import pandas as pd
 from tabulate import tabulate
 
-from db.crud import getIndicesOfInterestSettings
+from db.crud import getSetting
 from fetchers.yfinance_fetcher import getYfinanceTickerData
-from utils.constants.defaults import DEFAULT_INDEX_TICKERS
+from utils.constants.defaults import DEFAULT_INDEX_TICKERS, getDefaultSetting
 from utils.table_utils import formatPercentage, formatCurrency
 
 OUTPUT_COLUMNS = ['Name', 'Exchange Name', 'Price', 'Currency', '52wk Diff', '52wk Low Diff', '52wk High Diff', '200-Day Avg Diff']
 COL_ALIGN = ['left', 'left', 'right', 'left', 'right', 'right', 'right', 'right']
 MAX_NAME_LENGTH = 25
 MAX_COL_WIDTHS = [MAX_NAME_LENGTH, 11, 12, 8, 10, 10, 10, 10]
+INDICES_SETTING_KEY = 'indices_of_interest'
 
 def indexPerformance(conn):
     """
     Gets performance of key indices. Uses default indices if not set by settings.
     """
-    indices = getIndicesOfInterestSettings(conn)
-    if not indices:
-        print("\nNo indices of interest set in settings. Using default indices.")
-        indices = DEFAULT_INDEX_TICKERS
+    default_indices = getDefaultSetting(INDICES_SETTING_KEY)
+    indices_str = getSetting(conn, INDICES_SETTING_KEY, default_indices)
+    try:
+        indices = ast.literal_eval(indices_str)
+    except (ValueError, SyntaxError):
+        print("\nError parsing indices from settings. Using default indices.")
+        indices = ast.literal_eval(default_indices)
     
-    data = getYfinanceTickerData(None, indices)
-
+    data = getYfinanceTickerData(conn, indices)    
+    
     outputDfRows = []
 
     for index in indices:

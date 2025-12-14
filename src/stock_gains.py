@@ -11,6 +11,7 @@ from commands.investment_history import investmentHistory
 from commands.portfolio_value import portfolioValue
 from commands.rebalance_suggestions import rebalanceSuggestions
 from commands.sell import sellInvestment
+from commands.settings import settingsCommand
 from db.backup_handler import backup_database, restore_database
 from db.db_handler import database_setup
 from utils.constants.command_completer import COMMANDS, COMMAND_DESCRIPTIONS
@@ -69,7 +70,7 @@ def main():
             elif user_input == "help":
                 outputHelp(COMMANDS, COMMAND_DESCRIPTIONS)
             elif user_input == "settings":
-                print("Settings feature is not implemented yet.")
+                settingsCommand(conn, kb)
             else:
                 print("Invalid command. Please try again.")
 

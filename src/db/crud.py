@@ -1,4 +1,3 @@
-import ast
 import psycopg2
 
 import db.queries as q
@@ -206,19 +205,92 @@ def insertTargetBalance(cur, ticker, percentage):
     """
     cur.execute(q.insertTargetBalance(), (ticker, percentage,))
 
-def getIndicesOfInterestSettings(conn):
+def getAllSettings(conn):
     """
-    Returns the indices of interest from the `settings` table as a list.
+    Returns all settings from the `settings` table as a dictionary.
+    
+    Params:
+    - conn: db connection
+    
+    Returns:
+    - dict: attribute -> value mappings
     """
     try:
         with conn:
             with conn.cursor() as cur:
-                cur.execute(q.settingsIndicesOfInterestQuery())
-                result = cur.fetchone()
-                if result and result[0]:
-                    return ast.literal_eval(result[0])
-                else:
-                    return []
+                cur.execute(q.allSettingsQuery())
+                result = cur.fetchall()
+                return {row[0]: row[1] for row in result}
     except psycopg2.Error as e:
         print(f"Database error: {e}")
-        return []
+        return {}
+
+def getSetting(conn, attribute, default=None):
+    """
+    Returns a specific setting from the `settings` table.
+    
+    Params:
+    - conn: db connection
+    - attribute: setting attribute name
+    - default: default value if setting doesn't exist
+    
+    Returns:
+    - str: setting value or default
+    """
+    try:
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(q.settingQuery(), (attribute,))
+                result = cur.fetchone()
+                return result[0] if result else default
+    except psycopg2.Error as e:
+        print(f"Database error: {e}")
+        return default
+
+def updateSetting(conn, attribute, value):
+    """
+    Updates or inserts a setting in the `settings` table.
+    
+    Params:
+    - conn: db connection
+    - attribute: setting attribute name
+    - value: setting value
+    
+    Returns:
+    - tuple: (success: bool, message: str)
+    """
+    try:
+        with conn:
+            with conn.cursor() as cur:
+                # Try to update first
+                cur.execute(q.updateSettingQuery(), (value, attribute))
+                
+                # If no rows were updated, insert instead
+                if cur.rowcount == 0:
+                    cur.execute(q.insertSettingQuery(), (attribute, value))
+        
+        return True, f"Setting '{attribute}' updated successfully."
+    except psycopg2.Error as e:
+        print(f"Database error: {e}")
+        return False, f"Error updating setting: {e}"
+
+def deleteSetting(conn, attribute):
+    """
+    Deletes a setting from the `settings` table to reset it to default.
+    
+    Params:
+    - conn: db connection
+    - attribute: setting attribute name
+    
+    Returns:
+    - tuple: (success: bool, message: str)
+    """
+    try:
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(q.deleteSettingQuery(), (attribute,))
+        
+        return True, f"Setting '{attribute}' reset to default."
+    except psycopg2.Error as e:
+        print(f"Database error: {e}")
+        return False, f"Error deleting setting: {e}"
