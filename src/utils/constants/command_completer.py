@@ -15,7 +15,9 @@ COMMANDS = NestedCompleter.from_nested_dict({
     "index-performance": None,      # historical performance of index tickers
     "investment-history": None,
     "portfolio-balance": None,      # Add market percentage
-    "portfolio-growth": None,       # Add growth over time of current portfolio
+    "portfolio-growth": {           # Add growth over time of current portfolio
+        "--full": None,             # Include ticker-level breakdown
+    },
     "rebalance-suggestions": None,
     "settings": None,               # Add backup location, restore backup
     "help": None,                   # Auto-generated?
@@ -35,7 +37,7 @@ COMMAND_DESCRIPTIONS = {
     # "--ticker": "Show historical performance of specific ticker",
     "rebalance-suggestions": "Suggest portfolio rebalancing",
     "portfolio-balance": "Show exposure balances of current portfolio",
-    "portfolio-growth": "Show growth of portfolio over time",
+    "portfolio-growth": "Show growth of portfolio over time (YTD, 1Y, 2Y, 3Y, 5Y)",
     "ammend": "Amend a trade or dividend entry",
     "settings": "Configure application settings",
 }
