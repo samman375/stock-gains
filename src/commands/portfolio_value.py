@@ -1,8 +1,9 @@
 import pandas as pd
 from tabulate import tabulate
 
-from db.crud import getDistinctTickers
+from db.crud import getDistinctTickers, getSetting
 from fetchers.yfinance_fetcher import getYfinanceTickerData
+from utils.constants.defaults import getDefaultSetting
 from utils.data_processing import tickerValueExtractor
 from utils.table_utils import formatCurrency, formatPercentage
 
@@ -62,6 +63,7 @@ def portfolioValue(conn, fullOutput=False):
             tickerProfit = currentTickerRealisedGains + currentTickerDividends - currentTickerBrokerage
             soldPositionsTotalProfit += tickerProfit
 
+            debug = getSetting(conn, 'debug_mode', getDefaultSetting('debug_mode')).lower() == 'true'
             if debug:
                 print(f"\nFor ticker {ticker}:")
                 print(f"  Realised Gains: {formatCurrency(currentTickerRealisedGains)}")
@@ -80,6 +82,16 @@ def portfolioValue(conn, fullOutput=False):
     else:
         percGain = round((totalGain / totalCost) * 100, 2)
         netPercGain = round((totalNetGain / totalCost) * 100, 2)
+
+    # Sort data rows by Value column before adding totals and sold rows
+    if fullOutput:
+        df = pd.DataFrame(outputDfRows, columns=OUTPUT_COLUMNS_FULL)
+        df = df.sort_values(by='Value', ascending=False, key=lambda x: x.str.replace('$', '').str.replace(',', '').astype(float))
+        outputDfRows = df.values.tolist()
+    else:
+        df = pd.DataFrame(outputDfRows, columns=OUTPUT_COLUMNS_MIN)
+        df = df.sort_values(by='Value', ascending=False, key=lambda x: x.str.replace('$', '').str.replace(',', '').astype(float))
+        outputDfRows = df.values.tolist()
 
     soldRow = [
         '*',
