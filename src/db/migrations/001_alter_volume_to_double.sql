@@ -1,59 +1,15 @@
--- Schema for Dividends Table
-CREATE TABLE IF NOT EXISTS dividends (
-    ticker VARCHAR(255) NOT NULL,
-    date DATE NOT NULL,
-    distribution_value DOUBLE PRECISION NOT NULL,
-    PRIMARY KEY (ticker, date)
-);
+-- Migration: Convert volume column from INT to DOUBLE PRECISION
+-- Purpose: Support partial shares in investment history
+-- Created: 2026-05-16
 
--- Schema for Investment History Table
-CREATE TABLE IF NOT EXISTS investment_history (
-    ticker VARCHAR(255) NOT NULL,
-    price DOUBLE PRECISION NOT NULL,
-    volume DOUBLE PRECISION NOT NULL,
-    brokerage DOUBLE PRECISION NOT NULL,
-    date DATE NOT NULL,
-    status VARCHAR(10) NOT NULL CHECK (status IN ('BUY', 'SELL')),
-    id SERIAL PRIMARY KEY
-);
-
--- Schema for Target Portfolio Table
-CREATE TABLE IF NOT EXISTS target_balance (
-    bucket_tickers TEXT[] NOT NULL,
-    percentage DOUBLE PRECISION NOT NULL CHECK (percentage >= 0 AND percentage <= 100),
-    PRIMARY KEY (bucket_tickers)
-);
-
-CREATE TABLE IF NOT EXISTS settings (
-    attribute VARCHAR(255) PRIMARY KEY,
-    attribute_value TEXT NOT NULL
-);
-
--- Add indexes to improve query performance
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_class WHERE relname = 'idx_dividends_date') THEN
-        CREATE INDEX idx_dividends_date ON dividends (date);
-    END IF;
-END $$;
-
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_class WHERE relname = 'idx_investment_history_date') THEN
-        CREATE INDEX idx_investment_history_date ON investment_history (date);
-    END IF;
-END $$;
-
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_class WHERE relname = 'idx_target_balance_percentage') THEN
-        CREATE INDEX idx_target_balance_percentage ON target_balance (percentage);
-    END IF;
-END $$;
-
--- Create current portfolio view
+-- Drop the materialized view that depends on the volume column
 DROP MATERIALIZED VIEW IF EXISTS current_portfolio;
 
+-- Alter the volume column type
+ALTER TABLE investment_history
+ALTER COLUMN volume TYPE DOUBLE PRECISION;
+
+-- Recreate the materialized view using the schema definition
 CREATE MATERIALIZED VIEW current_portfolio AS
 WITH buys AS (
     SELECT *
@@ -119,7 +75,7 @@ aggregated AS (
     SELECT
         r.ticker,
         SUM(r.remaining_volume) AS total_volume,
-        ROUND(SUM(r.remaining_volume * r.price)::numeric / NULLIF(SUM(r.remaining_volume), 0), 2) AS average_price
+        ROUND((SUM(r.remaining_volume * r.price)::numeric / NULLIF(SUM(r.remaining_volume), 0)::numeric)::numeric, 2) AS average_price
     FROM remaining r
     GROUP BY r.ticker
 ),

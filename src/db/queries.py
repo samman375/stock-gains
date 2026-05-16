@@ -5,7 +5,7 @@ def distinctTickersQuery():
     return """
         SELECT DISTINCT 
             ticker, 
-            ROUND(total_volume * average_price, 2) AS calculated_cost
+            ROUND((total_volume * average_price)::numeric, 2) AS calculated_cost
         FROM current_portfolio
         ORDER BY calculated_cost DESC;
     """
@@ -14,7 +14,7 @@ def distinctTickersWithPositions():
     return """
         SELECT DISTINCT 
             ticker, 
-            ROUND(total_volume * average_price, 2) AS calculated_cost
+            ROUND((total_volume * average_price)::numeric, 2) AS calculated_cost
         FROM current_portfolio
         WHERE total_volume > 0
         ORDER BY calculated_cost DESC;
@@ -33,7 +33,7 @@ def currentPortfolioTickerQuery():
     return """
         SELECT 
             c.ticker, 
-            ROUND(c.total_volume * c.average_price, 2) AS calculated_cost, 
+            ROUND((c.total_volume * c.average_price)::numeric, 2) AS calculated_cost, 
             c.total_volume, 
             c.buy_brokerage, 
             c.sell_brokerage,

@@ -4,6 +4,7 @@ from psycopg2 import OperationalError
 
 from db.config import DB_CONFIG, TABLE_SCHEMA_FILE
 from db.backup_handler import restore_database, get_latest_backup
+from db.migration_handler import apply_migrations
 
 def get_connection(default_db=False):
     """
@@ -144,5 +145,7 @@ def database_setup():
                 setup_tables(conn)
         else:
             print("Database already contains data.")
+
+        apply_migrations(conn)
 
     return conn
