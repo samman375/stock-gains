@@ -11,7 +11,7 @@ def buyInvestment(conn, key_bindings):
         # TODO: Fix validator + change to only validate at end
         ticker = prompt('Ticker: ', key_bindings=key_bindings)
         price = float(prompt('Price: $', validator=v.NonNegativeFloatValidator(), key_bindings=key_bindings))
-        volume = int(prompt('Volume: ', validator=v.NonNegativeIntValidator(), key_bindings=key_bindings))
+        volume = float(prompt('Volume: ', validator=v.NonNegativeFloatValidator(), key_bindings=key_bindings))
         brokerage = float(prompt('Brokerage: $', validator=v.NonNegativeFloatValidator(), key_bindings=key_bindings))
         date = prompt('Date (YYYY-MM-DD): ', validator=v.DateValidator(), key_bindings=key_bindings)
         

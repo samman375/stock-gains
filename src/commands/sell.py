@@ -10,7 +10,7 @@ def sellInvestment(conn, key_bindings):
     try:
         ticker = prompt('Ticker: ', key_bindings=key_bindings)
         price = float(prompt('Price: $', validator=v.NonNegativeFloatValidator(), key_bindings=key_bindings))
-        volume = int(prompt('Volume: ', validator=v.NonNegativeIntValidator(), key_bindings=key_bindings))
+        volume = float(prompt('Volume: ', validator=v.NonNegativeFloatValidator(), key_bindings=key_bindings))
         brokerage = float(prompt('Brokerage: $', validator=v.NonNegativeFloatValidator(), key_bindings=key_bindings))
         date = prompt('Date (YYYY-MM-DD): ', validator=v.DateValidator(), key_bindings=key_bindings)
         profit = volume * price - brokerage
