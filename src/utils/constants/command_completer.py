@@ -13,7 +13,9 @@ COMMANDS = NestedCompleter.from_nested_dict({
         "--ticker": None,           # historical performance of specific ticker
     },
     "index-performance": None,      # historical performance of index tickers
-    "investment-history": None,
+    "investment-history": {         # trade or dividend history, optionally filtered by ticker
+        "--ticker": None,           # history for specific ticker
+    },
     "portfolio-balance": None,      # Add market percentage
     "portfolio-growth": None,       # Add growth over time of current portfolio
     "rebalance-suggestions": None,

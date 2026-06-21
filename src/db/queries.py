@@ -70,6 +70,17 @@ def dividendsQuery():
         ORDER BY date ASC;
     """
 
+def dividendsByTickerQuery():
+    return """
+        SELECT
+            ticker,
+            date,
+            distribution_value
+        FROM dividends
+        WHERE ticker = %s
+        ORDER BY date ASC;
+    """
+
 def dividendsInsert():
     return """
         INSERT INTO dividends (ticker, date, distribution_value)
@@ -90,6 +101,20 @@ def investmentHistoryQuery():
             date,
             status
         FROM investment_history
+        ORDER BY date ASC;
+    """
+
+def investmentHistoryByTickerQuery():
+    return """
+        SELECT
+            ticker,
+            price,
+            volume,
+            brokerage,
+            date,
+            status
+        FROM investment_history
+        WHERE ticker = %s
         ORDER BY date ASC;
     """
 

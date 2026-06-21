@@ -95,3 +95,18 @@ class SettingJsonValidator(Validator):
                     message="Invalid JSON or Python list format",
                     cursor_position=len(document.text)
                 )
+
+class ActivePositionTickerValidator(Validator):
+    """
+    Validates that the ticker entered is in the list of available tickers with active positions
+    """
+    def __init__(self, available_tickers):
+        self.available_tickers = available_tickers
+
+    def validate(self, document):
+        ticker = document.text.upper().strip()
+        if ticker and ticker not in self.available_tickers:
+            raise ValidationError(
+                message=f'Ticker must be one of: {", ".join(self.available_tickers)}',
+                cursor_position=len(document.text)
+            )

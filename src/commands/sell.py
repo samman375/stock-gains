@@ -1,14 +1,20 @@
 from prompt_toolkit import prompt
+from prompt_toolkit.completion import WordCompleter
 
 import utils.input_validation as v
-from db.crud import insertNewInvestmentHistory
+from db.crud import insertNewInvestmentHistory, getDistinctTickersWithPositions
 
 def sellInvestment(conn, key_bindings):
     """
     Add sale to database
     """
     try:
-        ticker = prompt('Ticker: ', key_bindings=key_bindings)
+        availableTickers = getDistinctTickersWithPositions(conn)
+        if not availableTickers:
+            print("No tickers with active positions found in portfolio.")
+            return
+        tickerCompleter = WordCompleter(availableTickers, ignore_case=True)
+        ticker = prompt('Ticker: ', completer=tickerCompleter, complete_while_typing=True, complete_in_thread=True, validator=v.ActivePositionTickerValidator(availableTickers), key_bindings=key_bindings).upper()
         price = float(prompt('Price: $', validator=v.NonNegativeFloatValidator(), key_bindings=key_bindings))
         volume = float(prompt('Volume: ', validator=v.NonNegativeFloatValidator(), key_bindings=key_bindings))
         brokerage = float(prompt('Brokerage: $', validator=v.NonNegativeFloatValidator(), key_bindings=key_bindings))

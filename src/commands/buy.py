@@ -1,7 +1,8 @@
 from prompt_toolkit import prompt
+from prompt_toolkit.completion import WordCompleter
 
 import utils.input_validation as v
-from db.crud import insertNewInvestmentHistory
+from db.crud import insertNewInvestmentHistory, getDistinctTickers
 
 def buyInvestment(conn, key_bindings):
     """
@@ -9,7 +10,9 @@ def buyInvestment(conn, key_bindings):
     """
     try:
         # TODO: Fix validator + change to only validate at end
-        ticker = prompt('Ticker: ', key_bindings=key_bindings)
+        availableTickers = getDistinctTickers(conn)
+        tickerCompleter = WordCompleter(availableTickers, ignore_case=True) if availableTickers else None
+        ticker = prompt('Ticker: ', completer=tickerCompleter, complete_while_typing=True, complete_in_thread=True, key_bindings=key_bindings).upper()
         price = float(prompt('Price: $', validator=v.NonNegativeFloatValidator(), key_bindings=key_bindings))
         volume = float(prompt('Volume: ', validator=v.NonNegativeFloatValidator(), key_bindings=key_bindings))
         brokerage = float(prompt('Brokerage: $', validator=v.NonNegativeFloatValidator(), key_bindings=key_bindings))

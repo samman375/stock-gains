@@ -146,6 +146,23 @@ def getInvestmentHistory(conn):
         print(f"Database error: {e}")
         return []
 
+def getInvestmentHistoryByTicker(conn, ticker):
+    """
+    Returns all rows from the `investment_history` table for a specific ticker.
+
+    Params:
+    - conn: db connection
+    - ticker: ticker to filter by
+    """
+    try:
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(q.investmentHistoryByTickerQuery(), (ticker,))
+                return cur.fetchall()
+    except psycopg2.Error as e:
+        print(f"Database error: {e}")
+        return []
+
 def getDividendHistory(conn):
     """
     Returns all rows from the `dividends` table.
@@ -157,6 +174,23 @@ def getDividendHistory(conn):
         with conn:
             with conn.cursor() as cur:
                 cur.execute(q.dividendsQuery())
+                return cur.fetchall()
+    except psycopg2.Error as e:
+        print(f"Database error: {e}")
+        return []
+
+def getDividendHistoryByTicker(conn, ticker):
+    """
+    Returns all rows from the `dividends` table for a specific ticker.
+
+    Params:
+    - conn: db connection
+    - ticker: ticker to filter by
+    """
+    try:
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(q.dividendsByTickerQuery(), (ticker,))
                 return cur.fetchall()
     except psycopg2.Error as e:
         print(f"Database error: {e}")
