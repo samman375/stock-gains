@@ -42,13 +42,15 @@ def apply_migrations(conn):
             
             print(f"Found {len(migration_files)} migration(s).")
             
+            already_applied_count = 0
+            
             for migration_file in migration_files:
                 migration_name = migration_file.name
                 
                 # Check if migration has already been applied
                 cur.execute("SELECT 1 FROM schema_migrations WHERE migration_name = %s", (migration_name,))
                 if cur.fetchone():
-                    print(f"✓ Already applied: {migration_name}")
+                    already_applied_count += 1
                     continue
                 
                 # Read and apply the migration
@@ -68,6 +70,12 @@ def apply_migrations(conn):
                     conn.rollback()
                     print(f"✗ Failed to apply migration {migration_name}: {e}")
                     raise
+            
+            # Print summary of already-applied migrations
+            if already_applied_count == len(migration_files):
+                print("All migrations already applied.")
+            elif already_applied_count > 0:
+                print(f"Found {already_applied_count} migration(s) already applied.")
     
     except psycopg2.Error as e:
         print(f"Database error during migrations: {e}")

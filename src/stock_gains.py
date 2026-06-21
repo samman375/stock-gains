@@ -51,6 +51,13 @@ def main():
                 dividend(conn, kb)
             elif user_input == "investment-history":
                 investmentHistory(conn, kb)
+            elif user_input.startswith("investment-history --ticker"):
+                parts = user_input.split()
+                if len(parts) >= 3:
+                    ticker = parts[2].upper()
+                    investmentHistory(conn, kb, ticker=ticker)
+                else:
+                    print("Usage: investment-history --ticker TICKER")
             elif user_input == "investment-performance":
                 investmentPerformance(conn)
             elif user_input == "investment-performance --ticker":
