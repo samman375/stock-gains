@@ -37,7 +37,7 @@ def main():
             user_input = prompt("Enter command: ", complete_while_typing=True, complete_in_thread=True, completer=COMMANDS)
 
             # TODO: Add keybindings to all commands if works
-            if user_input == "quit":
+            if user_input.lower() in ["quit", "exit"]:
                 break
             elif user_input == "value":
                 portfolioValue(conn, fullOutput=False)

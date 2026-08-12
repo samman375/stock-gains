@@ -117,6 +117,15 @@ def rebalanceSuggestions(conn, key_bindings):
     except KeyboardInterrupt:
         print("Operation cancelled. Proceeding with existing target balance.")
 
+    # Ask if there's an investment contribution amount to split according to Invest %
+    contributionAmount = 0
+    try:
+        userHasContribution = i.getBoolInput('Do you have an investment contribution amount in mind (Y/N)? ', key_bindings=key_bindings)
+        if userHasContribution:
+            contributionAmount = float(prompt('Enter contribution amount: $', validator=v.NonNegativeFloatValidator(), key_bindings=key_bindings))
+    except KeyboardInterrupt:
+        print("Operation cancelled. Proceeding without contribution amount.")
+
     # Create buckets dictionary with format:
     # {
     #     "NDQ.AX+IVV.AX":
@@ -188,20 +197,62 @@ def rebalanceSuggestions(conn, key_bindings):
     table = tabulate(valuationsDf, headers='keys', tablefmt='rounded_grid', showindex=False, colalign=COL_ALIGN_VALUATIONS)
     print(table)
 
-    suggestionsDfRows = []
+    # First compute suggestion amounts for each bucket
+    suggestions = []
     for bucket in buckets:
         targetValue = targetTotalValue * (buckets[bucket]['targetPerc'] / 100)
         targetDiff = targetValue - buckets[bucket]['value']
+        suggestions.append({
+            'bucket': bucket,
+            'tickers': buckets[bucket]['tickers'],
+            'currentPerc': round(buckets[bucket]['currentPerc'], 2),
+            'targetPerc': round(buckets[bucket]['targetPerc'], 2),
+            'value': round(buckets[bucket]['value'], 2),
+            'targetValue': round(targetValue, 2),
+            'suggestion': round(targetDiff, 2)
+        })
 
-        suggestionsDfRows.append([
-            formatTickerGroup(buckets[bucket]['tickers']),
-            formatPercentage(round(buckets[bucket]['currentPerc'], 2)),
-            formatPercentage(round(buckets[bucket]['targetPerc'], 2)),
-            formatCurrency(round(buckets[bucket]['value'], 2)),
-            formatCurrency(round(targetValue, 2)),
-            formatCurrency(round(targetDiff, 2))
-        ])
+    # Total amount to invest (sum of positive suggestions)
+    total_invest_amount = sum(max(s['suggestion'], 0) for s in suggestions)
 
-    suggestionsDf = pd.DataFrame(suggestionsDfRows, columns=SUGGESTIONS_COLUMNS)
-    table = tabulate(suggestionsDf, headers='keys', tablefmt='rounded_grid', showindex=False, colalign=COL_ALIGN_SUGGESTIONS)
+    # Build output columns and alignment dynamically — include Contribution only if requested
+    output_columns = SUGGESTIONS_COLUMNS.copy()
+    output_colalign = COL_ALIGN_SUGGESTIONS.copy()
+    # Always include Invest % column
+    output_columns.append('Invest %')
+    output_colalign.append('right')
+
+    include_contribution = bool(userHasContribution)
+    if include_contribution:
+        output_columns.append('Contribution')
+        output_colalign.append('right')
+
+    suggestionsDfRows = []
+    for s in suggestions:
+        invest_pct = 0
+        if total_invest_amount > 0 and s['suggestion'] > 0:
+            invest_pct = (s['suggestion'] / total_invest_amount) * 100
+
+        # Compute contribution split for this row based on invest_pct
+        contribution_split = 0
+        if contributionAmount and invest_pct > 0:
+            contribution_split = round((contributionAmount * invest_pct) / 100, 2)
+
+        row = [
+            formatTickerGroup(s['tickers']),
+            formatPercentage(s['currentPerc']),
+            formatPercentage(s['targetPerc']),
+            formatCurrency(s['value']),
+            formatCurrency(s['targetValue']),
+            formatCurrency(s['suggestion']),
+            formatPercentage(round(invest_pct, 2))
+        ]
+
+        if include_contribution:
+            row.append(formatCurrency(contribution_split))
+
+        suggestionsDfRows.append(row)
+
+    suggestionsDf = pd.DataFrame(suggestionsDfRows, columns=output_columns)
+    table = tabulate(suggestionsDf, headers='keys', tablefmt='rounded_grid', showindex=False, colalign=output_colalign)
     print(table)
