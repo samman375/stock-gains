@@ -22,6 +22,13 @@ Then run from any directory:
 stock-gains
 ```
 
+### \[Optional\] Adding executable to PATH for autocompletion in terminal
+
+Add the following line to your `~/.zshrc` file or equiavalent depending on your default shell:
+```sh
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc'
+```
+
 To see the list of available commands use `help`.
 
 ## Example commands and functionality
@@ -56,13 +63,6 @@ Overview of the main features:
 - `rebalance-suggestions`: get guidance on portfolio balancing.
 - `fear-and-greed`: fetch the current market sentiment indicator.
 - `settings`: configure app settings and backups.
-
-### \[Optional\] Adding executable to PATH for autocompletion in terminal
-
-Add the following line to your `~/.zshrc` file or equiavalent depending on your default shell:
-```sh
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc'
-```
 
 ## Tests
 
